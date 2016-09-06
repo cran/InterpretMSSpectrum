@@ -1,0 +1,18 @@
+Package: InterpretMSSpectrum
+Type: Package
+Title: Interpreting High Resolution GC-APCI-MS Spectra
+Version: 0.83
+Date: 2016-09-05
+Authors@R: person("Jan", "Lisec", role = c("aut", "cre"), email = "jan.lisec@charite.de")
+Author: Jan Lisec [aut, cre]
+Description: A deconvoluted mass spectrum (mass*intensity pairs) from Tri-Methyl-Silyl-derivatized GC-APCI-MS (Gas Chromatography-Atmospheric Pressure Chemical Ionization-Mass Spectrometry) data can be read, evaluated and plotted in an informative fashion. The main purpose is to identify the causal metabolite or more precisely the sum formula of the molecular peak within the spectrum.
+URL: http://dx.doi.org/10.1021/acs.analchem.6b02743
+License: GPL-3
+Depends: R(>= 2.10.0)
+Imports: Rdisop, enviPat, plyr
+RoxygenNote: 5.0.1
+NeedsCompilation: no
+Packaged: 2016-09-06 07:11:44 UTC; lisecj
+Maintainer: Jan Lisec <jan.lisec@charite.de>
+Repository: CRAN
+Date/Publication: 2016-09-06 10:04:39
