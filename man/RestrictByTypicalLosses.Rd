@@ -5,14 +5,18 @@
 \title{RestrictByTypicalLosses.}
 \usage{
 RestrictByTypicalLosses(rdisop_res = NULL, tl = NULL,
-  neutral_loss_cutoff = 0.5)
+  neutral_loss_cutoff = 0.5, punish = 0.1, substitutions = NULL)
 }
 \arguments{
 \item{rdisop_res}{Internal result structure of InterpretMSSpectrum.}
 
-\item{tl}{Typical loss, a mass, potentially with the formula as name.}
+\item{tl}{Typical loss, a mass with the according sum formula as name.}
 
 \item{neutral_loss_cutoff}{Cutoff in mDa for accepting an internal mass difference as a given neutral loss.}
+
+\item{punish}{If NULL remove fragments, if numeric 0..1 don't remove but punish the score.}
+
+\item{substitutions}{Potential substitutions like H/Na in ESI mode, provided as two column matrix.}
 }
 \value{
 Modified rdisop_res.
@@ -24,4 +28,3 @@ Modified rdisop_res.
 Not exported.
 }
 \keyword{internal}
-

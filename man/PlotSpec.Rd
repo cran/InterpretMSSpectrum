@@ -5,8 +5,9 @@
 \title{Plot Mass Spectrum.}
 \usage{
 PlotSpec(x = NULL, masslab = 0.1, rellab = FALSE, cutoff = 0.01,
-  cols = NULL, txt = NULL, mz_prec = 4, neutral_losses = NULL,
-  neutral_loss_cutoff = 0.5)
+  cols = NULL, txt = NULL, mz_prec = 4, ionization = NULL,
+  neutral_losses = NULL, neutral_loss_cutoff = NULL, substitutions = NULL,
+  xlim = NULL, ylim = NULL)
 }
 \arguments{
 \item{x}{A two-column matrix with ("mz", "int") information.}
@@ -23,9 +24,17 @@ PlotSpec(x = NULL, masslab = 0.1, rellab = FALSE, cutoff = 0.01,
 
 \item{mz_prec}{Numeric precision of m/z (=number of digits to plot).}
 
+\item{ionization}{Either APCI or ESI (important for main peak determination).}
+
 \item{neutral_losses}{Data frame of defined building blocks (Name, Formula, Mass). If not provided data("neutral_losses") will be used.}
 
 \item{neutral_loss_cutoff}{Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list.}
+
+\item{substitutions}{May provide a two column table of potential substitutions (for adducts in ESI-MS).}
+
+\item{xlim}{To specify xlim explicitely (for comparative plotting).}
+
+\item{ylim}{To specify ylim explicitely (for comparative plotting).}
 }
 \value{
 An annotated plot of the mass spectrum.
@@ -36,19 +45,16 @@ The main purpose is to visualize the relation between deconvoluted masses.
 }
 \examples{
 #load test data and apply function
-utils::data(test_spectrum)
-PlotSpec(x=test_spectrum)
+utils::data(apci_spectrum, package = "InterpretMSSpectrum")
+PlotSpec(x=apci_spectrum, ionization="APCI")
 
 # normalize test data by intensity
-s <- test_spectrum
+s <- apci_spectrum
 s[,2] <- s[,2]/max(s[,2])
 PlotSpec(x=s)
 
-# use more stringent cutoff
-PlotSpec(x=s, cutoff=0.1)
-
 # use relative labelling
-PlotSpec(x=s, cutoff=0.1, rellab=364.1789)
+PlotSpec(x=s, rellab=364.1789)
 
 # avoid annotation of masses and fragments
 PlotSpec(x=s, masslab=NULL, neutral_losses=NA)
@@ -60,5 +66,12 @@ PlotSpec(x=s, neutral_losses=tmp)
 # provide additional color and annotaion information per peak
 PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt"))
 
-}
+# simulate a Sodium adduct to the spectrum (and annotate using substitutions)
+p <- which.max(s[,2])
+s <- rbind(s, c(21.98194+s[p,1], 0.6*s[p,2]))
+PlotSpec(x=s, substitutions=matrix(c("H1","Na1"),ncol=2,byrow=TRUE))
 
+#load ESI test data and apply function
+utils::data(esi_spectrum)
+PlotSpec(x=esi_spectrum, ionization="ESI")
+}

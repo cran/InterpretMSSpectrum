@@ -4,7 +4,7 @@
 \alias{PlausibleFormula}
 \title{PlausibleFormula.}
 \usage{
-PlausibleFormula(x, ruleset = c("GCMS", "LCMS")[1])
+PlausibleFormula(x, ruleset = c("APCI", "ESI")[1])
 }
 \arguments{
 \item{x}{A chemical formula. No validity checks are performed.}
@@ -28,4 +28,3 @@ PlausibleFormula(x="C5H13O14P3")
 
 }
 \keyword{internal}
-

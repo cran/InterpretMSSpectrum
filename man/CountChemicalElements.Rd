@@ -21,4 +21,3 @@ A named numeric with counts for all contained or specified elements.
 No testing for any chemical alphabet is performed. Elements may occur several times and will be summed up in this case without a warning.
 }
 \keyword{internal}
-

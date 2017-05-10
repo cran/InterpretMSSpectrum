@@ -5,16 +5,23 @@
 \title{DetermineIsomainPeaks.}
 \usage{
 DetermineIsomainPeaks(spec = NULL, int_cutoff = 0.03, dmz_cutoff = 0.001,
-  precursor = NULL)
+  precursor = NULL, ionization = NULL, ionmode = "positive",
+  limit = NULL)
 }
 \arguments{
 \item{spec}{A two-column matrix with mz and int.}
 
 \item{int_cutoff}{Do not consider isomain peaks below this intensity cutoff (relative to base peak).}
 
-\item{dmz_cutoff}{Expected maximum within scan mass defect of your device in milli Dalton.}
+\item{dmz_cutoff}{Expected maximum within scan mass defect of your device in Dalton.}
 
 \item{precursor}{Specify the assumed precursor explicitly (ensure that precursor mass is included in list and everything above/higher is removed).}
+
+\item{ionization}{Should be made ionization dependent (not ready yet).}
+
+\item{ionmode}{Either 'positive' or 'negative'.}
+
+\item{limit}{Limit final list to a maximum number of peaks to speed up follow up processes.}
 }
 \value{
 A vector of ion masses from a spectrum which are potential fragment masses (without isotopes).
@@ -26,5 +33,13 @@ A vector of ion masses from a spectrum which are potential fragment masses (with
 This function is used within \link{PlotSpec} and \link{InterpretMSSpectrum} to identify main isotopic clusters.
 It is currently exported to allow the user to modify/substitute the result but may become an internal function in the future.
 }
+\examples{
+#load test data and apply function
+\dontrun{
+utils::data(apci_spectrum, package = "InterpretMSSpectrum")
+DetermineIsomainPeaks(spec=apci_spectrum, ionization="APCI")
+utils::data(esi_spectrum, package = "InterpretMSSpectrum")
+DetermineIsomainPeaks(spec=esi_spectrum, ionization="ESI")
+}
+}
 \keyword{internal}
-

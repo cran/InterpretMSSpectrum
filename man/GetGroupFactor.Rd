@@ -22,4 +22,3 @@ into Groups according to a gap parameter for further processing.
 not exported
 }
 \keyword{internal}
-

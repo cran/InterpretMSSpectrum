@@ -12,7 +12,8 @@
 #'
 #'@param obs Observed (measured) values, a matrix with two rows (mz/int).
 #'@param the Theoretical (estimated from sum formula) values, a matrix with two rows (mz/int).
-#'@param mass_prec The expected mass precision will influence mScore (see Details).
+#'@param dabs Absolute allowed mass deviation (the expected mass precision will influence mScore -- see Details).
+#'@param dppm Relative allowed mass deviation (the expected mass precision will influence mScore -- see Details).
 #'@param int_prec The expected intensity precision will influence mScore (see Details).
 #'@param limit minimal value of mScore. Should be left on zero.
 #'@param rnd_prec Rounding precision of mScore.
@@ -24,7 +25,12 @@
 #'# get theoretical isotopic pattern of Glucose
 #'glc <- Rdisop::getMolecule("C6H12O6")$isotopes[[1]][,1:3]
 #'mScore(obs=glc, the=glc)
-
+#'# modify pattern by maximum allowable error (2ppm mass error, 2% int error)
+#'glc_theoretic <- glc
+#'glc[1,] <- glc[1,]+2*glc[1,]/10^6
+#'glc[2,1:2] <- c(-0.02,0.02)+glc[2,1:2]
+#'mScore(obs=glc, the=glc_theoretic)
+#'
 #'# simulate mass and int defects
 #'ef <- function(x, e) {runif(1,x-x*e,x+x*e)}
 #'glc_obs <- glc
@@ -38,6 +44,7 @@
 #'mz_err <- round(seq(0,5,length.out=n),3)
 #'int_err <- round(seq(0,0.1,length.out=n),3)
 #'mat <- matrix(NA, ncol=n, nrow=n, dimnames=list(mz_err, 100*int_err))
+#'glc_obs <- glc
 #'for (i in 1:n) {
 #'  glc_obs[1,] <- sapply(glc[1,], ef, e=mz_err[i]*10^-6)
 #'  for (j in 1:n) {
@@ -53,15 +60,20 @@
 #'
 #'@export
 #'
-mScore <- function(obs=NULL, the=NULL, mass_prec=2, int_prec=0.05, limit=0, rnd_prec=0) { 
+mScore <- function(obs=NULL, the=NULL, dabs=0.0005, dppm=2, int_prec=0.02, limit=0, rnd_prec=0) { 
   # the average mass/int quality of the data is specified within the function call
-  # this is multiplied with a factor internally to render average data with mScore above 50
-  qfac <- 2
+  
   stopifnot(all(dim(obs)==dim(the)))
-  max_err_mz <- qfac*mass_prec*the[1,]/10^6
+  max_err_mz <- dabs+dppm*the[1,]/10^6
   dmz <- 1+99*abs(obs[1,]-the[1,])/max_err_mz
-  max_err_int <- qfac*int_prec*the[2,]
-  dint <- 1+99*abs(obs[2,]-the[2,])/max_err_int
+  dmz[dmz>100] <- 100
+  # max_err_int <- qfac*int_prec*the[2,]
+  # dint <- 1+99*abs(obs[2,]-the[2,])/max_err_int
+  # out <- round(101-mean(sqrt(dmz*dint)), rnd_prec)
+  
+  max_err_int <- 0.02+int_prec*the[2,]
+  dint <- 1+99*abs(obs[2,]-the[2,])/int_prec
+  dint[dint>100] <- 100
   out <- round(101-mean(sqrt(dmz*dint)), rnd_prec)
   return(ifelse(out<limit, limit, out))
 }

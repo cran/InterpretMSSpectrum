@@ -5,7 +5,8 @@
 \title{GetIsotopeDistribution.}
 \usage{
 GetIsotopeDistribution(fml = NULL, res = NULL, n = 2, ele_vec = c("C",
-  "H", "N", "O", "P", "S", "Si"))
+  "H", "N", "O", "P", "S", "Si"), check.fml = TRUE,
+  vdetect.detect = c("centroid", "intensoid")[1])
 }
 \arguments{
 \item{fml}{sum formula.}
@@ -15,6 +16,10 @@ GetIsotopeDistribution(fml = NULL, res = NULL, n = 2, ele_vec = c("C",
 \item{n}{Number of isotopes to calculate.}
 
 \item{ele_vec}{Character vector of elements to consider.}
+
+\item{check.fml}{The fml needs to be in enviPat style, i.e. not CH4 but C1H4. This will be ensured but can be skipped setting check to FALSE to speed up.}
+
+\item{vdetect.detect}{Will be deprecated soon. Only for testing this enviPat parameter.}
 }
 \value{
 Isotope distribution formatted similar to Rdisop result but more precise using enviPat.
@@ -26,4 +31,3 @@ Isotope distribution formatted similar to Rdisop result but more precise using e
 not exported
 }
 \keyword{internal}
-

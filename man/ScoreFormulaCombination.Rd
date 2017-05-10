@@ -5,17 +5,22 @@
 \title{ScoreFormulaCombination.}
 \usage{
 ScoreFormulaCombination(rdisop_res, nl_vec = c(C1H4 = 16.0313),
-  punish_invalid = 0.5, punish_S = 0.2, punish_nonplausible = 0.2,
-  return_rank = 1, neutral_loss_cutoff = 0.5, silent = TRUE)
+  punish_nas = 0.8, punish_invalid = 0.5, punish_S = 0.2,
+  punish_Cl = 0.2, punish_nonplausible = 0.2, return_rank = 1,
+  neutral_loss_cutoff = 0.5, substitutions = substitutions, silent = TRUE)
 }
 \arguments{
 \item{rdisop_res}{Internal result structure of InterpretMSSpectrum.}
 
 \item{nl_vec}{Named vector of neutral losses or NULL.}
 
+\item{punish_nas}{For each unexplained fragment in the tree the overall score will be multiplied by this value as a penalty.}
+
 \item{punish_invalid}{Lower formulas tagged invalid by Rdisop by factor 1-punish_invalid, e.g. punish_invalid=0.5 would lower a score of 80 to 40.}
 
 \item{punish_S}{Lower formulas containing Sufor by factor 1-punish_S*n_S, e.g. punish_S=0.2 would lower a score of 100 to 60 if 2 Sulfor are contained.}
+
+\item{punish_Cl}{Lower formulas containing Chlor by factor 1-punish_Cl*n_Cl, e.g. punish_Cl=0.2 would lower a score of 100 to 80 if 1 Chlor is contained.}
 
 \item{punish_nonplausible}{Check for all potential fragments not only if they are a subformula but if this neutral loss is a plausible formula itself and lower according to}
 
@@ -35,4 +40,3 @@ Output will be the most likely combination of fragments by evaluating the larges
 Not exported.
 }
 \keyword{internal}
-

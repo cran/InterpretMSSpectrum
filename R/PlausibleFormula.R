@@ -22,8 +22,8 @@
 #'
 #'@keywords internal
 
-PlausibleFormula <- function(x, ruleset=c("GCMS","LCMS")[1]) {
-  if (ruleset=="GCMS") {
+PlausibleFormula <- function(x, ruleset=c("APCI","ESI")[1]) {
+  if (ruleset=="APCI") {
     if (length(x)==1 && is.character(x)) {
       out_name <- x
       # check if a certain SumFormula is likely to appear in GCMS-APCI data
@@ -36,6 +36,7 @@ PlausibleFormula <- function(x, ruleset=c("GCMS","LCMS")[1]) {
       llim <- list("C"=1, "H"=4)
       out <- out & all(sapply(names(llim), function(y) { x[y]>=llim[[y]] }), na.rm=T)
       # test individual element ratios
+      out <- out & x["H"]<=(1+4*x["C"])
       out <- out & x["N"]<=x["C"]
       out <- out & x["O"]<=x["C"]
       out <- out & 6*x["P"]<=x["C"]
@@ -66,12 +67,14 @@ PlausibleFormula <- function(x, ruleset=c("GCMS","LCMS")[1]) {
       names(out) <- paste(x, collapse="_", sep="_")
     }
   }
-  if (ruleset=="LCMS") {
+  if (ruleset=="ESI") {
     if (length(x)==1 && is.character(x)) {
       out_name <- x
-      # check if a certain SumFormula is likely to appear in LCMS data
-      x <- CountChemicalElements(x, ele=c("C","H","N","O","P","S"))
-      m <- sum(x*c(12.0, 1.007825, 14.003074, 15.994915, 30.973762, 31.972071))
+      # check if a certain SumFormula is likely to appear in LCMS-ESI data
+      # rules for the following counted elements will be checked
+      x <- CountChemicalElements(x, ele=c("C","H","N","O","P","S","Cl","K","Na"))
+      # the molecular mass is therefore
+      m <- sum(x*c(12.0, 1.007825, 14.003074, 15.994915, 30.973762, 31.972071, 34.96885, 38.96371, 22.98977))
       out <- TRUE
       # test maximal number of elemental occurences (empirical cutoff evaluation based on GMD entries)
       ulim <- list("C"=2+0.07*m, "H"=6+0.14*m, "N"=5+0.01*m, "O"=3+0.03*m, "P"=min(c(8, 1+0.01*m)), "S"=4)
@@ -79,15 +82,17 @@ PlausibleFormula <- function(x, ruleset=c("GCMS","LCMS")[1]) {
       llim <- list("C"=-15+0.04*m, "H"=-10+0.03*m, "N"=0, "O"=-25+0.03*m, "P"=0, "S"=0)
       #out <- out & all(sapply(names(llim), function(y) { x[y]>=llim[[y]] }), na.rm=T)
       # test individual element ratios
-      out <- out & x["N"]<=x["C"]
-      out <- out & (x["O"]-4*x["P"])<=(1+x["C"])
-      out <- out & x["P"]<=x["C"]
-      out <- out & x["S"]<=x["C"]
-      out <- out & (x["N"]+x["P"]+x["O"]-4*x["P"]+x["S"])<=(2+x["C"])
+      out <- out & x["N"]<=(3+x["C"])
+      out <- out & (x["O"]-4*x["P"])<=(2+x["C"])
+      out <- out & x["P"]<=(1+x["C"])
+      out <- out & x["S"]<=(1+x["C"])
+      out <- out & (x["N"]+x["P"]+x["O"]-4*x["P"]+x["S"])<=(4+x["C"])
       # S and P are rare to occur together (though they sometimes may)
       out <- out & x["S"]*x["P"]==0
-      # if P>1 than O>=4 (...)
-      out <- out & ifelse(x["P"]>0, x["O"]>=4, TRUE)
+      # Na and K (forming adducts) should not occur together
+      out <- out & x["Na"]*x["K"]==0
+      # if P>1 than O>=2 (...)
+      out <- out & ifelse(x["P"]>0, x["O"]>=2, TRUE)
       names(out) <- out_name
     } else {
       out <- NA

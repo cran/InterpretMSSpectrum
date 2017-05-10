@@ -1,15 +1,15 @@
-\name{neutral_losses}
-\alias{neutral_losses}
+\name{neutral_losses_ESI}
+\alias{neutral_losses_ESI}
 \docType{data}
 \title{
-neutral_losses
+neutral_losses_ESI
 }
 \description{
-A data table defining neutral losses in GC-APCI-MS for silylated compounds.
+A data table defining neutral losses in LC-ESI-MS (positive mode).
 }
-\usage{data("neutral_losses")}
+\usage{data("neutral_losses_ESI")}
 \format{
-  A data frame with 22 observations on the following 3 variables.
+  A data frame with 45 observations on the following 3 variables.
   \describe{
     \item{\code{Name}}{a character vector containing the fragment name used for plot annnotation}
     \item{\code{Formula}}{a character vector containing chemical formulas}
@@ -27,11 +27,11 @@ assume that the respective sum formulas have to be different by CH4. In conseque
 suggestions for B which do not have a valid corresponding sum formula in A and vice versa.
 }
 \source{
-This list has been put together mnually by Jan Lisec analyzing multiple GC-APCI-MS data sets.
+This list has been put together mnually by Jan Lisec analyzing multiple LC-ESI-MS (positive mode) data sets.
 }
 \examples{
-data(neutral_losses)
-str(neutral_losses)
+data(neutral_losses_ESI)
+str(neutral_losses_ESI)
 }
 \keyword{datasets}
 \keyword{internal}

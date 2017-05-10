@@ -7,8 +7,10 @@
 #'Not exported.
 #'
 #'@param rdisop_res Internal result structure of InterpretMSSpectrum.
-#'@param tl Typical loss, a mass, potentially with the formula as name.
+#'@param tl Typical loss, a mass with the according sum formula as name.
 #'@param neutral_loss_cutoff Cutoff in mDa for accepting an internal mass difference as a given neutral loss.
+#'@param punish If NULL remove fragments, if numeric 0..1 don't remove but punish the score.
+#'@param substitutions Potential substitutions like H/Na in ESI mode, provided as two column matrix.
 #'
 #'@return
 #'Modified rdisop_res.
@@ -17,7 +19,7 @@
 #'
 #'@keywords internal
 #'
-RestrictByTypicalLosses <- function(rdisop_res=NULL, tl=NULL, neutral_loss_cutoff=0.5) {
+RestrictByTypicalLosses <- function(rdisop_res=NULL, tl=NULL, neutral_loss_cutoff=0.5, punish=0.1, substitutions=NULL) {
   for (i in 1:(length(rdisop_res)-1)) {
     for (j in (i+1):length(rdisop_res)) {
       # is tl found between these fragment groups?
@@ -34,13 +36,20 @@ RestrictByTypicalLosses <- function(rdisop_res=NULL, tl=NULL, neutral_loss_cutof
         for (k in which(ind[,"k"])) {
           # Rdisop version causes memory overflow and was substituted by enviPat version
           #if (Rdisop::subMolecules(jfm[ind[k,"j"]], names(tl))$formula == ifm[ind[k,"i"]]) ind[k,"f"] <- TRUE
-          if (enviPat::subform(jfm[ind[k,"j"]], names(tl)) == ifm[ind[k,"i"]]) ind[k,"f"] <- TRUE
+          #if (enviPat::subform(jfm[ind[k,"j"]], names(tl)) == ifm[ind[k,"i"]]) ind[k,"f"] <- TRUE
+          ind[k,"f"] <- is.subformula(f_sub=ifm[ind[k,"i"]], f_main=jfm[ind[k,"j"]], substitutions=substitutions)
         }
         # filter for correct sumformula combinations if present
         if (any(ind[,"f"])) {
           #ind[ind[,"k"]&ind[,"f"],]
-          rdisop_res[[i]] <- rdisop_res[[i]][ind[ind[,"f"],"i"],]
-          rdisop_res[[j]] <- rdisop_res[[j]][ind[ind[,"f"],"j"],]
+          #browser()
+          if (is.null(punish)) {
+            rdisop_res[[i]] <- rdisop_res[[i]][ind[ind[,"f"],"i"],]
+            rdisop_res[[j]] <- rdisop_res[[j]][ind[ind[,"f"],"j"],]
+          } else {
+            rdisop_res[[i]][-ind[ind[,"f"],"i"],"Score"] <- punish*rdisop_res[[i]][-ind[ind[,"f"],"i"],"Score"]
+            rdisop_res[[j]][-ind[ind[,"f"],"j"],"Score"] <- punish*rdisop_res[[j]][-ind[ind[,"f"],"j"],"Score"]
+          }
         }
       }
     }

@@ -2,21 +2,21 @@
 % Please edit documentation in R/InterpretMSSpectrum.R
 \name{InterpretMSSpectrum}
 \alias{InterpretMSSpectrum}
-\title{Interpreting GC-APCI-MS data.}
+\title{Interpreting High-Res-MS spectra.}
 \usage{
 InterpretMSSpectrum(spec = NULL, precursor = NULL, correct_peak = NULL,
   met_db = NULL, typical_losses_definition = NULL, silent = FALSE,
-  dppm = 3, score_cutoff = 0.5, neutral_loss_cutoff = 0.5)
+  dppm = 3, score_cutoff = 0.5, neutral_loss_cutoff = NULL,
+  ionization = c("APCI", "ESI")[1], quick_isos = TRUE, formula_db = NULL)
 }
 \arguments{
-\item{spec}{A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum} tries to read data from clipboard.}
+\item{spec}{A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum} tries to read data from clipboard (i.e. two columns copied from an Excel speadsheet).}
 
-\item{precursor}{The ion (m/z) from spec closest to this mass will be considered as precursor (can be nominal, 
-i.e. if precursor=364 then 364.1234 would be selected from spectrum if it is closest).}
+\item{precursor}{The ion (m/z) from spec closest to this mass will be considered as precursor (can be nominal, i.e. if precursor=364 then 364.1234 would be selected from spectrum if it is closest).}
 
-\item{correct_peak}{A character in the form of "name, formula, mz" to evaluate spectra against.}
+\item{correct_peak}{For testing purposes. A character in the form of "name, formula, mz" to evaluate spectra against. Note! Sperating character is ', '.}
 
-\item{met_db}{A metabolite DB (e.g. GMD) can be provided to search for candidates comparing M+H ions (cf. Examples).}
+\item{met_db}{A metabolite DB (e.g. GMD or internal) can be provided to search for candidates comparing M+H ions (cf. Examples).}
 
 \item{typical_losses_definition}{A file name (e.g. D:/BuildingBlocks_GCAPCI.txt) from where to load relevant neutral losses (cf. Details). Alternatively an dataframe with columns Name, Formula and Mass.}
 
@@ -26,36 +26,56 @@ i.e. if precursor=364 then 364.1234 would be selected from spectrum if it is clo
 
 \item{score_cutoff}{Specifies initial filtering step threshold per fragment. Sum Formulas with score_i < score_cutoff*max(score) will be removed.}
 
-\item{neutral_loss_cutoff}{Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list.}
+\item{neutral_loss_cutoff}{Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list. If NULL determined dependent on ionization.}
+
+\item{ionization}{Currently 'APCI' or 'ESI-' or 'ESI+' are supported as ionization modes.}
+
+\item{quick_isos}{There are two ways to compute isotope pattern for comparison, a fast but error prone using Rdisop and a slow but (more) correct using enviPat.}
+
+\item{formula_db}{A predetermined database of sum formulas and their isotopic fine structures can be used to extremely speed up the function.}
 }
 \value{
 An annotated plot of the mass spectrum and detailed information within the console.
 Main result, list of final candidate formulas and their putative fragments, will be returned invisibly.
 }
 \description{
-\code{InterpretMSSpectrum} will read, evaluate and plot a deconvoluted mass spectrum (mass*intensity pairs) from TMS-derivatized GC-APCI-MS data. 
-The main purpose is to identify the causal metabolite or more precisely the sum formula of the molecular peak.
+\code{InterpretMSSpectrum} will read, evaluate and plot a deconvoluted mass spectrum (mass*intensity pairs) from either TMS-derivatized GC-APCI-MS data or ESI+/- data. 
+The main purpose is to identify the causal metabolite or more precisely the sum formula of the molecular peak by annotating and interpreting all visible fragments and isotopes.
 }
 \details{
-For further details refer to and if using please cite Jaeger et al. (\url{http://dx.doi.org/10.1021/acs.analchem.6b02743}).
+For further details refer to and if using please cite Jaeger et al. (\url{http://dx.doi.org/10.1021/acs.analchem.6b02743}) in case of GC-APCI and Jaeger et al. 2017 (RCM, accepted) for ESI data.
+The Interpretation is extremely speed up if 'formula_db' (a predetermined database of potential sum formulas) is provided within the function call. Within the package you may use \link{GenerateMetaboliteSQLiteDB} to prepare one for yourself or request a download link from \email{jan.lisec@charite.de} as de novo claculation may take several days.
 }
 \examples{
 #load test data
-data(test_spectrum)
+utils::data(apci_spectrum)
 
 # provide information of a correct peak (if you know)
-correct_peak <- c("Glutamic acid (3TMS), C14H33NO4Si3, 364.1790")
+correct_peak <- "Glutamic acid (3TMS), C14H33NO4Si3, 364.1790"
 
 # provide database of known peaks and correct peak
 met_db <- data.frame("Name"=c("Glutamic acid (3TMS)","other peak with same sum formula"),
                     "Formula"=c("C14H33NO4Si3","C14H33NO4Si3"), 
-                    "M+H"=c(364.179,NA))
+                    "M+H"=c(364.179,364.179), stringsAsFactors=FALSE, check.names=FALSE)
                     
 # apply function providing above arguments (dppm is set to 0.5 to reduce run time)
-res <- InterpretMSSpectrum(spec=test_spectrum, correct_peak=correct_peak, met_db=met_db, dppm=0.5)
+res <- InterpretMSSpectrum(spec=apci_spectrum, correct_peak=correct_peak, met_db=met_db, dppm=0.5)
 
 # show final function result (score-sorted list of potential fragment trees)
 str(res)
-
+\donttest{
+#Given that you installed a prepared formula data base you can check performance increase by
+setwd("D:/Bruker/R/Rpackage_InterpretMSSpectrum/")
+system.time(InterpretMSSpectrum(spec=apci_spectrum, dppm=0.5, formula_db="APCI.db"))
+system.time(InterpretMSSpectrum(spec=apci_spectrum, dppm=0.5, formula_db=NULL))
+data(esi_spectrum)
+plot(InterpretMSSpectrum::findMAIN(spec=esi_spectrum))
+system.time(
+InterpretMSSpectrum(spec=esi_spectrum, dppm=0.5, ionization="ESI+", formula_db="ESI.db")
+)
+system.time(
+InterpretMSSpectrum(spec=esi_spectrum, dppm=0.5, formula_db=NULL)
+)
 }
 
+}

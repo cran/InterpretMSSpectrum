@@ -4,15 +4,17 @@
 \alias{mScore}
 \title{mScore.}
 \usage{
-mScore(obs = NULL, the = NULL, mass_prec = 2, int_prec = 0.05,
-  limit = 0, rnd_prec = 0)
+mScore(obs = NULL, the = NULL, dabs = 5e-04, dppm = 2,
+  int_prec = 0.02, limit = 0, rnd_prec = 0)
 }
 \arguments{
 \item{obs}{Observed (measured) values, a matrix with two rows (mz/int).}
 
 \item{the}{Theoretical (estimated from sum formula) values, a matrix with two rows (mz/int).}
 
-\item{mass_prec}{The expected mass precision will influence mScore (see Details).}
+\item{dabs}{Absolute allowed mass deviation (the expected mass precision will influence mScore -- see Details).}
+
+\item{dppm}{Relative allowed mass deviation (the expected mass precision will influence mScore -- see Details).}
 
 \item{int_prec}{The expected intensity precision will influence mScore (see Details).}
 
@@ -37,6 +39,12 @@ stable isotopic ratios.
 # get theoretical isotopic pattern of Glucose
 glc <- Rdisop::getMolecule("C6H12O6")$isotopes[[1]][,1:3]
 mScore(obs=glc, the=glc)
+# modify pattern by maximum allowable error (2ppm mass error, 2\% int error)
+glc_theoretic <- glc
+glc[1,] <- glc[1,]+2*glc[1,]/10^6
+glc[2,1:2] <- c(-0.02,0.02)+glc[2,1:2]
+mScore(obs=glc, the=glc_theoretic)
+
 # simulate mass and int defects
 ef <- function(x, e) {runif(1,x-x*e,x+x*e)}
 glc_obs <- glc
@@ -49,6 +57,7 @@ n <- 11
 mz_err <- round(seq(0,5,length.out=n),3)
 int_err <- round(seq(0,0.1,length.out=n),3)
 mat <- matrix(NA, ncol=n, nrow=n, dimnames=list(mz_err, 100*int_err))
+glc_obs <- glc
 for (i in 1:n) {
  glc_obs[1,] <- sapply(glc[1,], ef, e=mz_err[i]*10^-6)
  for (j in 1:n) {
@@ -63,4 +72,3 @@ cols <- cols[mat-min(mat)+1]
 text(x=rep(1:n,each=n), y=rep(1:n,times=n), labels=as.vector(mat), col=cols)
 
 }
-
