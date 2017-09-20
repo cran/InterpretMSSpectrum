@@ -50,5 +50,5 @@ InterpretMSSpectrum(fmr[[1]], precursor=263, ionization="ESI+", formula_db="ESI.
 
 }
 \references{
-Jaeger C, Meret M, Schmitt CA, Lisec J (2017), RCM, accepted.
+Jaeger C, Meret M, Schmitt CA, Lisec J (2017), DOI: 10.1002/rcm.7905.
 }

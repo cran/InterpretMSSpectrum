@@ -10,7 +10,7 @@ writeMSF(x, ...)
 
 \method{writeMSF}{default}(x, precursormz, precursortype = "[M+H]+",
   name = "unknown", ionmode = "Positive", ms1spec = NULL,
-  retentiontime = NULL, outfile = NULL)
+  retentiontime = NULL, outfile = NULL, ...)
 
 \method{writeMSF}{findMAIN}(x, rank = 1, ms2spec = NULL, outfile = NULL,
   ...)

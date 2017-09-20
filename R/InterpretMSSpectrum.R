@@ -66,12 +66,13 @@
 #'@importFrom utils data read.table
 #'
 InterpretMSSpectrum <-
-function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_losses_definition=NULL, silent=FALSE, dppm=3, score_cutoff=0.5, neutral_loss_cutoff=NULL, ionization=c("APCI","ESI")[1], quick_isos=TRUE, formula_db=NULL) {
+function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_losses_definition=NULL, silent=FALSE, dppm=3, score_cutoff=0.5, neutral_loss_cutoff=NULL, ionization=c("APCI","ESI+","ESI-")[1], quick_isos=TRUE, formula_db=NULL) {
 
   # POTENTIAL PARAMETERS that could be allowed for the user to modify
   # !!! carefull limiting (to maximum of 5 peaks) is experimental
   max_isomain_peaks <- 5
   
+  stopifnot(ionization %in% c("APCI","ESI+","ESI-","ESI"))
   if (substr(ionization,nchar(ionization),nchar(ionization))%in%c("+","-")) {
     ionmode <- ifelse(substr(ionization,nchar(ionization),nchar(ionization))=="+","positive","negative")
     ionization <- substr(ionization,1,nchar(ionization)-1)
@@ -197,7 +198,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
   }
   GetFragmentData <- function(M0=NULL, spec=NULL, n=2, ionization="APCI") {
     # try to get reasonable isotope peaks for M0 from spectrum
-    iso_mass <- ifelse(ionization=="APCI",1.001,1.003)
+    iso_mass <- ifelse(ionization=="APCI",1.0015,1.0034)
     p <- sapply(0:n, function(dmz) { 
       tmp <- which(abs((M0+dmz*iso_mass)-spec[,1])<0.01)
       if (length(tmp)>1) {
@@ -210,9 +211,9 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     attr(frag, "M0") <- M0
     return(frag)
   }
-  EvaluateFragment <- function(frag=NULL, em=0.00055, dppm=3, score_cutoff=0, allowed_elements=c("C","H","N","O","P","S","Si"), ionization="APCI", silent=FALSE, maxElements="C60", quick_isos=FALSE, sf_db=NULL) {
+  EvaluateFragment <- function(frag=NULL, em=0.00055, dppm=3, score_cutoff=0, allowed_elements=c("C","H","N","O","P","S","Si"), ionization="APCI", ionmode="positive", silent=FALSE, maxElements="C60", quick_isos=FALSE, sf_db=NULL) {
     # we need to correct our observed fragment data with the mass of an electron (charge) being +/- 0.00055 depending on positive/negative mode
-    frag[1,] <- frag[1,]+em
+    frag[1,] <- frag[1,]+ifelse(ionmode=="positive",1,-1)*em
     #browser()
     if (sf_db) {
       # data base approach --> much faster compared to default sollution below
@@ -304,15 +305,15 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     }
     return(rdisop_res)
   }
-  GetRdisopResult <- function(spec=NULL, isomain=NULL, silent=TRUE, em=0.00055, dppm=3, allowed_elements=allowed_elements, ionization=ionization, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db) {
+  GetRdisopResult <- function(spec=NULL, isomain=NULL, silent=TRUE, em=0.00055, dppm=3, allowed_elements=allowed_elements, ionization=ionization, ionmode=ionmode, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db) {
     if (!is.null(attr(isomain,"adducthyp"))) {
       rdisop_res <- lapply(isomain, function(M0) {
         frag <- GetFragmentData(M0=M0, spec=spec, n=3, ionization=ionization)
         if (M0==isomain[length(isomain)]) {
-          #browser()
-          frag[1,] <- frag[1,]-attr(isomain,"adducthyp")+1.0073
+          #to calculate de nove sum formulas we need to correct the MID for the (de)protonation
+          frag[1,] <- frag[1,]-attr(isomain,"adducthyp")+ifelse(ionmode=="positive",1,-1)*1.0073
         }
-        rdisop_res <- EvaluateFragment(frag=frag, em=em, dppm=2*dppm, allowed_elements=allowed_elements, silent=silent, ionization=ionization, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
+        rdisop_res <- EvaluateFragment(frag=frag, em=em, dppm=2*dppm, allowed_elements=allowed_elements, silent=silent, ionization=ionization, ionmode=ionmode, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
         invisible(rdisop_res)
       })
     } else {
@@ -425,7 +426,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     # start timing for testing purposes
     time_elapse <- Sys.time()
     # use Rdisop to get potential formulas (using up to n=2 isotopic peaks found)
-    rdisop_res <- GetRdisopResult(spec=spec, isomain=isomain, silent=silent, em=em, dppm=dppm, allowed_elements=allowed_elements, ionization=ionization, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
+    rdisop_res <- GetRdisopResult(spec=spec, isomain=isomain, silent=silent, em=em, dppm=dppm, allowed_elements=allowed_elements, ionization=ionization, ionmode=ionmode, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
     stats[stats[,"mz"] %in% round(sapply(rdisop_res,attr,"M0"),4),"initial"] <- sapply(rdisop_res,nrow)
     if (!is.null(correct_peak)) {
       if (local_check==0 && length(grep(fml, rdisop_res[[length(rdisop_res)]][,1]))!=1) local_check <- 1

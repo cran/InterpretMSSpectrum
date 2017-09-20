@@ -33,7 +33,7 @@ writeMSF <- function(x, ...) {
 #' @param outfile Name of MAT file, or \code{NULL} for 'stdout'.
 #'
 #' @rdname writeMSF
-#' @method writeMSF default
+#' @export
 #'
 writeMSF.default <- function(x, 
                              precursormz, 
@@ -42,7 +42,8 @@ writeMSF.default <- function(x,
                              ionmode="Positive", 
                              ms1spec=NULL, 
                              retentiontime=NULL, 
-                            outfile=NULL) {
+                             outfile=NULL,
+                             ...) {
   "%&%" <- function(x, y) paste0(x, y)
   out <- "NAME: " %&% name %&% "\n"
   if (!is.null(retentiontime)) {
@@ -68,7 +69,7 @@ writeMSF.default <- function(x,
 #' @param ms2spec If available you may provide the according MS2 spectrum
 #'
 #' @rdname writeMSF
-#' @method writeMSF findMAIN
+#' @export
 #'
 writeMSF.findMAIN <- function(x, 
                               rank=1, 
@@ -93,15 +94,19 @@ writeMSF.findMAIN <- function(x,
       ms2spec 
     }
     scoresObj <- attr(x[[rnk]], "scores")
-    precursormz <- scoresObj[,"prec"]
+    precursormz <- scoresObj[,"adductmz"]
     adducthyp <- scoresObj[,"adducthyp"]
     precursortype <- precursordict[,2][which(abs(adducthyp-precursordict[,1])<0.01)]
     writeMSF.default(x=ms2spec, 
                      precursormz=precursormz, 
                      precursortype=precursortype,
                      ms1spec=ms1spec,
-                     name=if(is.null(outfile)) "unknown" else sprintf("%s_%02d", sub("\\.mat", "", basename(outfile)), rnk),
-                     outfile=if(is.null(outfile)) "" else file.path(dirname(outfile), sprintf("%s_%02d.mat", sub("\\.mat", "", basename(outfile)), rnk)),
+                     name=if(is.null(outfile)) "unknown" else {
+                       if(length(r)==1) outfile else sprintf("%s_%02d", sub("\\.mat", "", basename(outfile)), rnk)
+                     },
+                     outfile=if(is.null(outfile)) "" else {
+                       if(length(r)==1) outfile else file.path(dirname(outfile), sprintf("%s_%02d.mat", sub("\\.mat", "", basename(outfile)), rnk))
+                     },
                      ...)
   }
 }

@@ -22,7 +22,7 @@
 #'
 #' @return A list-like 'findMAIN' object for which 'print', 'summary' and 'plot' methods are available.
 #' 
-#' @references Jaeger C, Meret M, Schmitt CA, Lisec J (2017), RCM, accepted.
+#' @references Jaeger C, Meret M, Schmitt CA, Lisec J (2017), DOI: 10.1002/rcm.7905.
 #'
 #' @examples
 #' \donttest{
@@ -124,38 +124,34 @@ findMAIN <-
     }
     resolveConflicts <- function(s, ruleset, rules.found) {
       allPeaksUnique <- all(sapply(rules.found, length) > 1)
-      allRulesUnique <-
-        all(!duplicated(rules.found) & !is.na(rules.found))
-      if (allPeaksUnique &&
-          allRulesUnique)
-        return(rules.found)
+      allRulesUnique <- all(!duplicated(rules.found) & !is.na(rules.found))
+      if(allPeaksUnique && allRulesUnique) return(rules.found)
       ## first resolve double peak assignments (same rule assigned to more than one peak)
-      if (!allPeaksUnique) {
-        notok <- which(sapply(rules.found, length) > 1)
-        for (i in notok) {
-          conflictingPks.Intensities <- s[rules.found[[i]], 2]
-          rules.found[[i]] <-
-            rules.found[[i]][which.max(conflictingPks.Intensities)]
+      if(!allPeaksUnique) {
+        notok <- which(sapply(rules.found, length)>1)
+        for(i in notok) {
+          conflictingPks.Intensities <- s[ rules.found[[i]], 2]
+          rules.found[[i]] <- rules.found[[i]][which.max(conflictingPks.Intensities)]
         }
       }
       ## then resolve double rule assignments (same peak assigned multiple rules (mostly charge-related)
-      if (any(idx <-
-              duplicated(rules.found) & !is.na(rules.found))) {
+      if(any(idx <- duplicated(rules.found) & !is.na(rules.found))) {
         notok <- which(idx)
-        nonuniquePks <-
-          unique(unlist(rules.found[which(idx)]))
-        for (pk.idx in nonuniquePks) {
+        nonuniquePks <- unique(unlist(rules.found[which(idx)]))
+        for(pk.idx in nonuniquePks) {
           ##pk.idx <- rules.found[[i]]
-          r.idx <- which(!is.na(unlist(rules.found)) &
-                           unlist(rules.found) == pk.idx)
-          rch <- ruleset[, "charge"][r.idx]
-          pkch <- s[, "charge"][pk.idx]
-          ##message("r.idx:", r.idx, "; rch:", rch, "; pk.idx:", pk.idx, "; pkch:", pkch)
-          r.idx.wrong <-
-            ifelse(!is.na(pkch), r.idx[which(rch != pkch)],
-                   r.idx[which(rch != which.min(rch))])
-          for (k in 1:length(r.idx.wrong))
-            rules.found[[r.idx.wrong[k]]] <- NA
+          r.idx <- which( !is.na(unlist(rules.found)) &
+                            unlist(rules.found) == pk.idx)
+          rch <- ruleset[,"charge"][r.idx]
+          pkch <- s[,"charge"][pk.idx]
+          r.idx.wrong <- if(!is.na(pkch) && length(unique(rch))>1) { # in case peak charge is known, exclude rules of different charge
+            r.idx[which(rch != pkch)] 
+          } else if (length(unique(rch)) > 1) { # in case peak charge is unknown but rules differ in charge exclude higher charges
+            r.idx[ which(rch > min(rch)) ]
+          } else { # all rule charges are equal so just exclude all but the first
+            r.idx[ 2:length(r.idx) ]
+          }
+          for(k in 1:length(r.idx.wrong)) rules.found[[ r.idx.wrong[k] ]] <- NA
         }
       }
       return(rules.found)
@@ -446,95 +442,5 @@ findMAIN <-
     attr(out, "adducthyp_tested") <- names(adducthyp)
     attr(out, "rules_tested") <- rules[, 1]
     class(out) <- "findMAIN"
-    return(out)
-  }
-
-
-print.findMAIN <-
-  function (x)
-  {
-    nres <- length(x)
-    i = 1
-    scores <- summary(x)
-    scores1 <- attr(x[[i]], "scores")
-    nprec <- length(unique(sapply(x, function(x)
-      attr(x, "scores")[,
-                        "adductmz"])))
-    nadduct <-
-      length(unique(sapply(x, function(x)
-        attr(x, "scores")[,
-                          "adducthyp"])))
-    message(
-      sprintf(
-        "Analyzed %d neutral mass hypotheses (%d peaks * %d adducts), kept %d",
-        nprec * nadduct,
-        nprec,
-        nadduct,
-        nres
-      )
-    )
-    message(
-      sprintf(
-        "Selected %.4f as [M%+.2f], neutral %.4f, score %.2f",
-        scores1[, 1],
-        scores1[, 2],
-        scores1[, 3],
-        scores1[, 10]
-      )
-    )
-    print(x[[i]])
-  }
-
-
-plot.findMAIN <-
-  function (x,
-            rank = 1,
-            correct_mass = NULL,
-            ...)
-  {
-    if (length(rank) > 1) {
-      opar <- graphics::par(mfrow = grDevices::n2mfrow(length(rank)))
-      graphics::par(mar = c(2, 2, 2, 1))
-      on.exit(graphics::par(opar))
-    }
-    idx <- rank
-    if (any(idx > length(x))) {stop("object shorter than requested numer of ranks")}
-    lidx <- length(idx)
-    legend_text_col <- matrix(1, nrow = ncol(attr(x[[1]], "scores")), ncol = lidx)
-    if (lidx > 1) {
-      sm <- summary(x)[idx, ]
-      legend_text_col[7, which(sm$mass_score == max(sm$mass_score))] <- 3
-      legend_text_col[8, which(sm$int_score == max(sm$int_score))] <- 3
-      legend_text_col[9, which(sm$supp_isos == max(sm$supp_isos))] <- 3
-    }
-    for (i in 1:lidx) {
-      cols <- x[[idx[i]]][,"charge"]
-      cols[is.na(cols)] <- 0
-      cols <- cols+1
-      cols[cols>=3] <- 6
-      cols[!is.na(x[[idx[i]]][,"label"])] <- 4
-      InterpretMSSpectrum::PlotSpec(x = x[[idx[i]]], cutoff = 0, cols = cols, txt = x[[idx[i]]][,c("mz","label")], ...)
-      graphics::legend("topright", legend = paste(colnames(attr(x[[idx[i]]], "scores")), round(as.numeric(attr(x[[idx[i]]], "scores")), 2)), bty = "n", cex = 0.75, text.col = legend_text_col[, i])
-      mhyp <- attr(x[[idx[i]]], "scores")[, "neutral_mass"]
-      color <- if (!is.null(correct_mass)) {
-        if (abs(mhyp - correct_mass) < 0.01) 3 else 2
-      } else {
-        1
-      }
-      mtext(sprintf("[%d] %.4f", idx[i], round(mhyp, 4)), col = color)
-    }
-  }
-
-summary.findMAIN <-
-  function (x)
-  {
-    attrname <- "scores"
-    out <- data.frame(matrix(ncol = ncol(attr(x[[1]], attrname)), nrow = length(x)))
-    colnames(out) <- colnames(attr(x[[1]], attrname))
-    for (i in 1:length(x)) {
-      out[i,] <- attr(x[[i]], attrname)
-    }
-    for (i in c(1, 2, 3)) out[, i] <- round(out[, i], 4)
-    for (i in c(5, 6, 7, 8, 10))  out[, i] <- round(out[, i], 2)
     return(out)
   }

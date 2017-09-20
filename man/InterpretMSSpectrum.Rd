@@ -7,7 +7,8 @@
 InterpretMSSpectrum(spec = NULL, precursor = NULL, correct_peak = NULL,
   met_db = NULL, typical_losses_definition = NULL, silent = FALSE,
   dppm = 3, score_cutoff = 0.5, neutral_loss_cutoff = NULL,
-  ionization = c("APCI", "ESI")[1], quick_isos = TRUE, formula_db = NULL)
+  ionization = c("APCI", "ESI+", "ESI-")[1], quick_isos = TRUE,
+  formula_db = NULL)
 }
 \arguments{
 \item{spec}{A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum} tries to read data from clipboard (i.e. two columns copied from an Excel speadsheet).}

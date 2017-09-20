@@ -27,7 +27,7 @@ sendToMSF(x, ...)
 
 \item{MSFexe}{Full path of MS-FINDER executable. This needs to be set  according to your system. If \code{NULL}, MAT files are written but the program is not opened.}
 
-\item{rank}{Which rank from 'findMAIN' should be exported}
+\item{rank}{Which rank from 'findMAIN' should be exported.}
 
 \item{ms2spec}{An (optional) MS2 spectrum to be passed to MSFINDER. If  \code{NULL}, the MS1 spectrum used by 'findMAIN' is used. If dedicated MS2 spectra are available, this option should be used.}
 }
@@ -39,6 +39,16 @@ Send spectrum to MSFinder.
 }
 \details{
 In the default case 'x' can be a matrix or data frame, where the first two columns are assumed to contain the 'mz' and 'intensity' values, respectively. Further arguments 'precursormz' and 'precursortype' are required in this case. Otherwise 'x' can be of class \code{findMAIN}.
+}
+\examples{
+\donttest{
+utils::data(esi_spectrum, package = "InterpretMSSpectrum")
+fmr <- findMAIN(esi_spectrum)
+getwd()
+sendToMSF(fmr, outfile="tmp.mat")
+sendToMSF(fmr, outfile="tmp.mat", rank=1:3)
+}
+
 }
 \references{
 H.Tsugawa et al (2016) Hydrogen rearrangement rules: computational MS/MS fragmentation and structure elucidation using MS-FINDER software. Analytical Chemistry, 88, 7946-7958

@@ -15,7 +15,16 @@
 #'
 #' @return
 #' Full path of generated MAT file (invisibly).
-#' 
+
+#' @examples
+#' \donttest{
+#' utils::data(esi_spectrum, package = "InterpretMSSpectrum")
+#' fmr <- findMAIN(esi_spectrum)
+#' getwd()
+#' sendToMSF(fmr, outfile="tmp.mat")
+#' sendToMSF(fmr, outfile="tmp.mat", rank=1:3)
+#' }
+#'
 #' @rdname sendToMSF
 #' @export
 #' 
@@ -31,7 +40,7 @@ sendToMSF <- function(x, ...) {
 #' @param MSFexe Full path of MS-FINDER executable. This needs to be set  according to your system. If \code{NULL}, MAT files are written but the program is not opened.
 #'   
 #' @rdname sendToMSF
-#' @method sendToMSF default
+#' @export
 #' 
 sendToMSF.default <- function(x, 
                               precursormz,
@@ -45,39 +54,43 @@ sendToMSF.default <- function(x,
                   x[,1][which.max(x[,2])])
     outfile <- file.path(tempdir(), fn) # use the per-session temporary dir
   }
-  writeMSF.default(x, 
+  writeMSF.default(x=x, 
                    precursormz=precursormz, 
                    precursortype=precursortype, 
-                   outfile=outfile, ...)
-  if(!is.null(MSFexe))
+                   outfile=outfile,
+                   ...)
+  if(!is.null(MSFexe)) {
     system2(normalizePath(MSFexe), normalizePath(dirname(outfile)), wait=FALSE)
+  }
   invisible(outfile)
 }
 
-#' @rdname sendToMSF
-#' @method sendToMSF findMAIN
-#' 
-#' @param rank Which rank from 'findMAIN' should be exported
+#' @param rank Which rank from 'findMAIN' should be exported.
 #' @param ms2spec An (optional) MS2 spectrum to be passed to MSFINDER. If  \code{NULL}, the MS1 spectrum used by 'findMAIN' is used. If dedicated MS2 spectra are available, this option should be used.
 #'   
+#' @rdname sendToMSF
+#' @export
+#' 
 sendToMSF.findMAIN <- function(x, 
                                rank=1,
                                ms2spec=NULL,
                                outfile=NULL, 
                                MSFexe=NULL, 
                                ...) {
-  if(is.null(outfile)) {
+  if (is.null(outfile)) {
     spec <- x[[rank]][,1:2,drop=F]
     fn <- sprintf("unknown%s_%.2f.mat", 
                   format(Sys.time(), "%Y%m%d_%H%M%OS2"),
-                  attr(x[[rank]], "scores")[, "prec"])
+                  attr(x[[rank]], "scores")[, "adductmz"])
     outfile <- file.path(tempdir(), fn) # use the per-session temporary dir
   }
-  writeMSF.findMAIN(fmo=x, 
+  writeMSF.findMAIN(x=x, 
                     rank=rank,
                     ms2spec=ms2spec,
                     outfile=outfile, 
                     ...)
-  if(!is.null(MSFexe)) system2(normalizePath(MSFexe), normalizePath(dirname(outfile)), wait=FALSE)
+  if (!is.null(MSFexe)) {
+    system2(normalizePath(MSFexe), normalizePath(dirname(outfile)), wait=FALSE)
+  }
   invisible(outfile)
 }

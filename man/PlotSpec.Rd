@@ -40,7 +40,7 @@ PlotSpec(x = NULL, masslab = 0.1, rellab = FALSE, cutoff = 0.01,
 An annotated plot of the mass spectrum.
 }
 \description{
-\code{PlotSpec} will read, evaluate and plot a deconvoluted mass spectrum (mass*intensity pairs) from TMS-derivatized GC-APCI-MS data. 
+\code{PlotSpec} will read, evaluate and plot a deconvoluted mass spectrum (mass*intensity pairs) from TMS-derivatized GC-APCI-MS data.
 The main purpose is to visualize the relation between deconvoluted masses.
 }
 \examples{
