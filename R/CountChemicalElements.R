@@ -12,7 +12,7 @@
 #'@return
 #'A named numeric with counts for all contained or specified elements.
 #'
-#'@keywords internal
+#'@export
 #'
 CountChemicalElements <- function(x = NULL, ele = NULL) {
     # count all elements present within 'x'

@@ -1,10 +1,11 @@
 Package: InterpretMSSpectrum
 Type: Package
 Title: Interpreting High Resolution Mass Spectra
-Version: 1.1
-Date: 2017-09-20
-Authors@R: person("Jan", "Lisec", role = c("aut", "cre"), email = "jan.lisec@charite.de")
+Version: 1.2
+Date: 2018-05-03
+Authors@R: person("Jan", "Lisec", role = c("aut", "cre"), email = "jan.lisec@bam.de")
 Author: Jan Lisec [aut, cre]
+Maintainer: Jan Lisec <jan.lisec@bam.de>
 Description: Annotate and interpret deconvoluted mass spectra (mass*intensity pairs) from high resolution mass spectrometry devices.
 URL: http://dx.doi.org/10.1021/acs.analchem.6b02743
 License: GPL-3
@@ -13,7 +14,6 @@ Imports: Rdisop, enviPat, plyr, utils, foreach, doParallel, DBI,
         graphics, grDevices, RSQLite
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-09-20 10:03:05 UTC; lisecj
-Maintainer: Jan Lisec <jan.lisec@charite.de>
+Packaged: 2018-05-03 11:34:51 UTC; jlisec
 Repository: CRAN
-Date/Publication: 2017-09-20 10:19:45 UTC
+Date/Publication: 2018-05-03 12:03:25 UTC

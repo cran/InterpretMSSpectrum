@@ -23,17 +23,8 @@ Logical indicating if f_sub is potentially a subformula of f_main.
 To achieve the task formulas are split into elements and counted using \link{CountChemicalElements}.
 }
 \examples{
-#is.subformula(f_sub="C6H12O6", f_main="C6H12O6")
-#is.subformula(f_sub="C4H8O5", f_main="C6H12O6")
-#is.subformula(f_sub="C6H12O6H1", f_main="C6H12O6Na1")
-#s <- data.frame("s1"=c("H1","H1"),"s2"=c("Na1","K1"))
-#is.subformula(f_sub="C6H12O6H1", f_main="C6H12O6Na1", substitutions=s)
-#s <- data.frame("s1"=c("H1","H1"),"s2"=c("Na1","N1H3"))
-#is.subformula(f_sub="C6H12O6H1", f_main="C6H12O6NH3", substitutions=s)
-#s <- data.frame("s1"=c("H1","H1"),"s2"=c("Na1","N1H3"))
-#is.subformula(f_sub="C6H12O6Cl1", f_main="C6H12O6K1", substitutions=s)
-#s <- data.frame("s1"=c("H1","Na1"),"s2"=c("Na1","H1"))
-#is.subformula(f_sub="C18H35N1O1Na1", f_main="C36H71N2O2", substitutions=s)
+InterpretMSSpectrum:::is.subformula(f_sub="C6H12O6", f_main="C6H12O6")
+InterpretMSSpectrum:::is.subformula(f_sub="C4H8O5", f_main="C6H12O6")
 
 }
 \keyword{internal}

@@ -17,16 +17,6 @@
 #'@keywords internal
 #'
 findiso <- function(spec=NULL, mzabs=0.001, intthr=0.03, CAMERAlike=TRUE) {
-  ## helper function for gap search (usually integrated in InterpretMS)
-  GetGroupFactor <-
-    function(x, gap) {
-      stopifnot(is.numeric(x))
-      idx <- rank(x)
-      x <- x[order(x)]
-      x <- c(T, diff(x)>gap)
-      x <- factor(rep(1:sum(x), times=diff(c(which(x),length(x)+1))))
-      return(x[idx])
-    }
   ## helper function to determine main mz and charge of an isotopic group
   ## [may still need work]
   mainmz <- function(x, l=1) {

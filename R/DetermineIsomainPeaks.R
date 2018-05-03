@@ -24,9 +24,9 @@
 #'#load test data and apply function
 #'\dontrun{
 #'utils::data(apci_spectrum, package = "InterpretMSSpectrum")
-#'DetermineIsomainPeaks(spec=apci_spectrum, ionization="APCI")
+#'InterpretMSSpectrum:::DetermineIsomainPeaks(spec=apci_spectrum, ionization="APCI")
 #'utils::data(esi_spectrum, package = "InterpretMSSpectrum")
-#'DetermineIsomainPeaks(spec=esi_spectrum, ionization="ESI")
+#'InterpretMSSpectrum:::DetermineIsomainPeaks(spec=esi_spectrum, ionization="ESI")
 #'}
 DetermineIsomainPeaks <-
 function(spec=NULL, int_cutoff=0.03, dmz_cutoff=0.001, precursor=NULL, ionization=NULL, ionmode="positive", limit=NULL) {
