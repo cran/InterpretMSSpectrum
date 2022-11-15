@@ -1,29 +1,28 @@
-#'@title ScoreFormulaCombination.
+#' @title ScoreFormulaCombination.
 #'
-#'@description
-#'\code{ScoreFormulaCombination} takes a rdisop formula seach result as a list. This list will contain formula suggestions for certain masses (including Score information) and masses should be in ascending order.
+#' @description \code{ScoreFormulaCombination} takes a Rdisop formula search result as a list. This list will contain formula suggestions for certain masses (including Score information) and masses should be in ascending order.
 #'
-#'@details
-#'Not exported.
+#' @details
+#' Not exported.
 #'
-#'@param rdisop_res Internal result structure of InterpretMSSpectrum.
-#'@param nl_vec Named vector of neutral losses or NULL.
-#'@param punish_nas For each unexplained fragment in the tree the overall score will be multiplied by this value as a penalty.
-#'@param punish_invalid Lower formulas tagged invalid by Rdisop by factor 1-punish_invalid, e.g. punish_invalid=0.5 would lower a score of 80 to 40.
-#'@param punish_S Lower formulas containing Sufor by factor 1-punish_S*n_S, e.g. punish_S=0.2 would lower a score of 100 to 60 if 2 Sulfor are contained.
-#'@param punish_Cl Lower formulas containing Chlor by factor 1-punish_Cl*n_Cl, e.g. punish_Cl=0.2 would lower a score of 100 to 80 if 1 Chlor is contained.
-#'@param punish_nonplausible Check for all potential fragments not only if they are a subformula but if this neutral loss is a plausible formula itself and lower according to
-#'@param return_rank Integer, will return the n-th best combination; if NA will return a ranked list of all found combinations.
-#'@param neutral_loss_cutoff Cutoff in mDa for accepting an internal mass difference as a given neutral loss.
-#'@param silent Print some stats or not.
+#' @param rdisop_res Internal result structure of InterpretMSSpectrum.
+#' @param nl_vec Named vector of neutral losses or NULL.
+#' @param punish_nas For each unexplained fragment in the tree the overall score will be multiplied by this value as a penalty.
+#' @param punish_invalid Lower formulas tagged invalid by Rdisop by factor 1-punish_invalid, e.g. punish_invalid=0.5 would lower a score of 80 to 40.
+#' @param punish_S Lower formulas containing Sulfur by factor 1-punish_S*n_S, e.g. punish_S=0.2 would lower a score of 100 to 60 if 2 Sulfur are contained.
+#' @param punish_Cl Lower formulas containing Chlorine by factor 1-punish_Cl*n_Cl, e.g. punish_Cl=0.2 would lower a score of 100 to 80 if 1 Chlorine is contained.
+#' @param punish_nonplausible Check for all potential fragments not only if they are a sub formula but if this neutral loss is a plausible formula itself and lower according to
+#' @param return_rank Integer, will return the n-th best combination; if NA will return a ranked list of all found combinations.
+#' @param neutral_loss_cutoff Cutoff in mDa for accepting an internal mass difference as a given neutral loss.
+#' @param silent Print some stats or not.
 
-#'@return
-#'Output will be the most likely combination of fragments by evaluating the largest mean score combination of all fragments.
+#' @return
+#' Output will be the most likely combination of fragments by evaluating the largest mean score combination of all fragments.
 #'
-#'@import plyr
-#'@import enviPat
+#' @importFrom  plyr ldply
 #'
-#'@keywords internal
+#' @keywords internal
+#' @noRd
 #'
 ScoreFormulaCombination <- function(rdisop_res, nl_vec=c("C1H4"=16.0313), punish_nas=0.8, punish_invalid=0.5, punish_S=0.2, punish_Cl=0.2, punish_nonplausible=0.2, return_rank=1, neutral_loss_cutoff=0.5, substitutions=substitutions, silent=TRUE) {
   # rename internally for testing and readability

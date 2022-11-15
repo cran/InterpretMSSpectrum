@@ -4,8 +4,13 @@
 \alias{IMS_parallel}
 \title{IMS_parallel.}
 \usage{
-IMS_parallel(spectra = NULL, ncores = 8, precursor = NULL,
-  correct_peak = NULL, ...)
+IMS_parallel(
+  spectra = NULL,
+  ncores = 8,
+  precursor = NULL,
+  correct_peak = NULL,
+  ...
+)
 }
 \arguments{
 \item{spectra}{List of spectra.}
@@ -19,13 +24,16 @@ IMS_parallel(spectra = NULL, ncores = 8, precursor = NULL,
 \item{...}{Further parameters passed directly to \code{InterpretMSSpectrum}.}
 }
 \value{
-A list of \code{InterpretMSSpectrum} result objects which can be systematically evaluated. However, note that plotting is unfortunately not enabled for parallel processing.
+A list of \code{InterpretMSSpectrum} result objects which can be systematically evaluated. 
+    However, note that plotting is unfortunately not enabled for parallel processing.
 }
 \description{
 \code{IMS_parallel} is a parallel implementation of \code{\link{InterpretMSSpectrum}}.
 }
 \details{
-For mass processing and testing it may be sufficient to use InterpretMSSpectrum without plotting functionality. However, function is likely to be deprecated or integrated as an option into the main function in the future.
+For mass processing and testing it may be sufficient to use \code{InterpretMSSpectrum} 
+    without plotting functionality. However, function is likely to be deprecated or integrated 
+    as an option into the main function in the future.
 }
 \seealso{
 \code{\link{InterpretMSSpectrum}}

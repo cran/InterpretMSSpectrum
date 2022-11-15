@@ -8,12 +8,19 @@
 \usage{
 writeMSF(x, ...)
 
-\method{writeMSF}{default}(x, precursormz, precursortype = "[M+H]+",
-  name = "unknown", ionmode = "Positive", ms1spec = NULL,
-  retentiontime = NULL, outfile = NULL, ...)
+\method{writeMSF}{default}(
+  x,
+  precursormz,
+  precursortype = "[M+H]+",
+  name = "unknown",
+  ionmode = "Positive",
+  ms1spec = NULL,
+  retentiontime = NULL,
+  outfile = NULL,
+  ...
+)
 
-\method{writeMSF}{findMAIN}(x, rank = 1, ms2spec = NULL, outfile = NULL,
-  ...)
+\method{writeMSF}{findMAIN}(x, rank = 1, ms2spec = NULL, outfile = NULL, ...)
 }
 \arguments{
 \item{x}{A matrix, 'findMAIN' or other object for which methods are defined.}

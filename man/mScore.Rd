@@ -4,8 +4,15 @@
 \alias{mScore}
 \title{mScore.}
 \usage{
-mScore(obs = NULL, the = NULL, dabs = 5e-04, dppm = 2,
-  int_prec = 0.02, limit = 0, rnd_prec = 0)
+mScore(
+  obs = NULL,
+  the = NULL,
+  dabs = 5e-04,
+  dppm = 2,
+  int_prec = 0.02,
+  limit = 0,
+  rnd_prec = 0
+)
 }
 \arguments{
 \item{obs}{Observed (measured) values, a matrix with two rows (mz/int).}
@@ -32,7 +39,7 @@ Scalar mScore giving the quality of the observed data if theoretical data are tr
 The maximum expected average mass error should be specified in ppm. A observed pattern deviating
 that much from the theoretical pattern would still receive a reasonable (average) mScore while
 observations deviating stronger or less strong will reach lower or higher mScores respectively.
-Likewise the intensity presision should specify the average quality of your device to maintain
+Likewise the intensity precision should specify the average quality of your device to maintain
 stable isotopic ratios.
 }
 \examples{

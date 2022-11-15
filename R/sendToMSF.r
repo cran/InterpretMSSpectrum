@@ -7,8 +7,10 @@
 #' 
 #' @description Send spectrum to MSFinder.
 #' 
-#' @details 
-#' In the default case 'x' can be a matrix or data frame, where the first two columns are assumed to contain the 'mz' and 'intensity' values, respectively. Further arguments 'precursormz' and 'precursortype' are required in this case. Otherwise 'x' can be of class \code{findMAIN}.
+#' @details In the default case 'x' can be a matrix or data frame, where the first two columns 
+#'     are assumed to contain the 'mz' and 'intensity' values, respectively. Further arguments 
+#'     'precursormz' and 'precursortype' are required in this case. Otherwise 'x' can be of 
+#'     class \code{findMAIN}.
 #' 
 #' @param x A matrix or 'findMAIN' object
 #' @param ... Arguments passed to methods of \code{\link{writeMSF}}.
@@ -17,10 +19,9 @@
 #' Full path of generated MAT file (invisibly).
 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' utils::data(esi_spectrum, package = "InterpretMSSpectrum")
 #' fmr <- findMAIN(esi_spectrum)
-#' getwd()
 #' sendToMSF(fmr, outfile="tmp.mat")
 #' sendToMSF(fmr, outfile="tmp.mat", rank=1:3)
 #' }
@@ -35,19 +36,21 @@ sendToMSF <- function(x, ...) {
 }
 
 #' @param precursormz m/z of (de)protonated molecule or adduct ion 
-#' @param precursortype adduct type, e.g. "[M+H]+", "[M+Na]+". Accepted values are all adduct ions supported by MSFINDER.
+#' @param precursortype adduct type, e.g. \code{[M+H]+} or \code{[M+Na]+}. Accepted values are all adduct ions supported by MSFINDER.
 #' @param outfile Name of MAT file. If NULL, a temporary file is created in the  per-session temporary directory (see \code{\link{tempdir}}).
 #' @param MSFexe Full path of MS-FINDER executable. This needs to be set  according to your system. If \code{NULL}, MAT files are written but the program is not opened.
 #'   
 #' @rdname sendToMSF
 #' @export
 #' 
-sendToMSF.default <- function(x, 
-                              precursormz,
-                              precursortype="[M+H]+",
-                              outfile=NULL, 
-                              MSFexe=NULL, 
-                              ...) {
+sendToMSF.default <- function(
+  x, 
+  precursormz,
+  precursortype="[M+H]+",
+  outfile=NULL, 
+  MSFexe=NULL, 
+  ...
+) {
   if(is.null(outfile)) {
     fn <- sprintf("unknown%s_%.2f.mat", 
                   format(Sys.time(), "%Y%m%d_%H%M%OS2"),
@@ -66,17 +69,19 @@ sendToMSF.default <- function(x,
 }
 
 #' @param rank Which rank from 'findMAIN' should be exported.
-#' @param ms2spec An (optional) MS2 spectrum to be passed to MSFINDER. If  \code{NULL}, the MS1 spectrum used by 'findMAIN' is used. If dedicated MS2 spectra are available, this option should be used.
+#' @param ms2spec An (optional) MS2 spectrum to be passed to MSFINDER. If \code{NULL}, the MS1 spectrum used by 'findMAIN' is used. If dedicated MS2 spectra are available, this option should be used.
 #'   
 #' @rdname sendToMSF
 #' @export
 #' 
-sendToMSF.findMAIN <- function(x, 
-                               rank=1,
-                               ms2spec=NULL,
-                               outfile=NULL, 
-                               MSFexe=NULL, 
-                               ...) {
+sendToMSF.findMAIN <- function(
+  x, 
+ rank=1,
+ ms2spec=NULL,
+ outfile=NULL, 
+ MSFexe=NULL, 
+ ...
+) {
   if (is.null(outfile)) {
     spec <- x[[rank]][,1:2,drop=F]
     fn <- sprintf("unknown%s_%.2f.mat", 

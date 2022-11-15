@@ -8,11 +8,16 @@
 \usage{
 sendToMSF(x, ...)
 
-\method{sendToMSF}{default}(x, precursormz, precursortype = "[M+H]+",
-  outfile = NULL, MSFexe = NULL, ...)
+\method{sendToMSF}{default}(
+  x,
+  precursormz,
+  precursortype = "[M+H]+",
+  outfile = NULL,
+  MSFexe = NULL,
+  ...
+)
 
-\method{sendToMSF}{findMAIN}(x, rank = 1, ms2spec = NULL, outfile = NULL,
-  MSFexe = NULL, ...)
+\method{sendToMSF}{findMAIN}(x, rank = 1, ms2spec = NULL, outfile = NULL, MSFexe = NULL, ...)
 }
 \arguments{
 \item{x}{A matrix or 'findMAIN' object}
@@ -21,7 +26,7 @@ sendToMSF(x, ...)
 
 \item{precursormz}{m/z of (de)protonated molecule or adduct ion}
 
-\item{precursortype}{adduct type, e.g. "[M+H]+", "[M+Na]+". Accepted values are all adduct ions supported by MSFINDER.}
+\item{precursortype}{adduct type, e.g. \code{[M+H]+} or \code{[M+Na]+}. Accepted values are all adduct ions supported by MSFINDER.}
 
 \item{outfile}{Name of MAT file. If NULL, a temporary file is created in the  per-session temporary directory (see \code{\link{tempdir}}).}
 
@@ -29,7 +34,7 @@ sendToMSF(x, ...)
 
 \item{rank}{Which rank from 'findMAIN' should be exported.}
 
-\item{ms2spec}{An (optional) MS2 spectrum to be passed to MSFINDER. If  \code{NULL}, the MS1 spectrum used by 'findMAIN' is used. If dedicated MS2 spectra are available, this option should be used.}
+\item{ms2spec}{An (optional) MS2 spectrum to be passed to MSFINDER. If \code{NULL}, the MS1 spectrum used by 'findMAIN' is used. If dedicated MS2 spectra are available, this option should be used.}
 }
 \value{
 Full path of generated MAT file (invisibly).
@@ -38,13 +43,15 @@ Full path of generated MAT file (invisibly).
 Send spectrum to MSFinder.
 }
 \details{
-In the default case 'x' can be a matrix or data frame, where the first two columns are assumed to contain the 'mz' and 'intensity' values, respectively. Further arguments 'precursormz' and 'precursortype' are required in this case. Otherwise 'x' can be of class \code{findMAIN}.
+In the default case 'x' can be a matrix or data frame, where the first two columns 
+    are assumed to contain the 'mz' and 'intensity' values, respectively. Further arguments 
+    'precursormz' and 'precursortype' are required in this case. Otherwise 'x' can be of 
+    class \code{findMAIN}.
 }
 \examples{
-\donttest{
+\dontrun{
 utils::data(esi_spectrum, package = "InterpretMSSpectrum")
 fmr <- findMAIN(esi_spectrum)
-getwd()
 sendToMSF(fmr, outfile="tmp.mat")
 sendToMSF(fmr, outfile="tmp.mat", rank=1:3)
 }

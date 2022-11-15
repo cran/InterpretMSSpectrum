@@ -4,10 +4,21 @@
 \alias{PlotSpec}
 \title{Plot Mass Spectrum.}
 \usage{
-PlotSpec(x = NULL, masslab = 0.1, rellab = FALSE, cutoff = 0.01,
-  cols = NULL, txt = NULL, mz_prec = 4, ionization = NULL,
-  neutral_losses = NULL, neutral_loss_cutoff = NULL, substitutions = NULL,
-  xlim = NULL, ylim = NULL)
+PlotSpec(
+  x = NULL,
+  masslab = 0.1,
+  rellab = FALSE,
+  cutoff = 0.01,
+  cols = NULL,
+  txt = NULL,
+  mz_prec = 4,
+  ionization = NULL,
+  neutral_losses = NULL,
+  neutral_loss_cutoff = NULL,
+  substitutions = NULL,
+  xlim = NULL,
+  ylim = NULL
+)
 }
 \arguments{
 \item{x}{A two-column matrix with ("mz", "int") information.}
@@ -32,9 +43,9 @@ PlotSpec(x = NULL, masslab = 0.1, rellab = FALSE, cutoff = 0.01,
 
 \item{substitutions}{May provide a two column table of potential substitutions (for adducts in ESI-MS).}
 
-\item{xlim}{To specify xlim explicitely (for comparative plotting).}
+\item{xlim}{To specify xlim explicitly (for comparative plotting).}
 
-\item{ylim}{To specify ylim explicitely (for comparative plotting).}
+\item{ylim}{To specify ylim explicitly (for comparative plotting).}
 }
 \value{
 An annotated plot of the mass spectrum.

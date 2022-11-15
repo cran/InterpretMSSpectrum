@@ -1,26 +1,24 @@
-#'@title GetIsotopeDistribution.
+#' @title GetIsotopeDistribution.
 #'
-#'@description
-#'\code{GetIsotopeDistribution} will generate an isotopic distribution for a given formula.
+#' @description \code{GetIsotopeDistribution} will generate an isotopic distribution for a given formula.
 #'
-#'@details
-#'not exported
+#' @details not exported
 #'
-#'@param fml sum formula.
-#'@param res MS resolution. Yet experimental, may fail.
-#'@param n Number of isotopes to calculate.
-#'@param ele_vec Character vector of elements to consider.
-#'@param check.fml The fml needs to be in enviPat style, i.e. not CH4 but C1H4. This will be ensured but can be skipped setting check to FALSE to speed up.
-#'@param vdetect.detect Will be deprecated soon. Only for testing this enviPat parameter.
+#' @param fml sum formula.
+#' @param res MS resolution. Yet experimental, may fail.
+#' @param n Number of isotopes to calculate.
+#' @param ele_vec Character vector of elements to consider.
+#' @param check.fml The 'fml' needs to be in enviPat style, i.e. not CH4 but C1H4. This will be ensured but can be skipped setting check to FALSE to speed up.
+#' @param vdetect.detect Will be deprecated soon. Only for testing this enviPat parameter.
 #'
-#'@return
-#'Isotope distribution formatted similar to Rdisop result but more precise using enviPat.
+#' @return Isotope distribution formatted similar to Rdisop result but more precise using enviPat.
 #'
-#'@import enviPat
-#'@importFrom stats weighted.mean
-#'@importFrom utils data
+#' @import enviPat
+#' @importFrom stats weighted.mean
+#' @importFrom utils data
 #'
-#'@keywords internal
+#' @keywords internal
+#' @noRd
 #'
 GetIsotopeDistribution <- function(fml=NULL, res=NULL, n=2, ele_vec=c("C","H","N","O","P","S","Si"), check.fml=TRUE, vdetect.detect=c("centroid","intensoid")[1]) {
   # load and restrict isotope list locally

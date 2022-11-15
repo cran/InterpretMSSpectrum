@@ -9,7 +9,7 @@ PlausibleFormula(x, ruleset = c("APCI", "ESI")[1])
 \arguments{
 \item{x}{A chemical formula. No validity checks are performed.}
 
-\item{ruleset}{Currently either "GCMS" or "LCMS" as a keyword. In future potentially a link to a texfile containing the ruleset.}
+\item{ruleset}{Currently either "GCMS" or "LCMS" as a keyword. In future potentially a link to a text file containing the rule set.}
 }
 \value{
 Either TRUE or FALSE. Use sapply(vector, PlausibleFormula) if necessary.

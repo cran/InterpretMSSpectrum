@@ -7,7 +7,7 @@
 #'@param gap Difference between two consecutive values at which a split is generated.
 #'
 #'@return
-#'A factor vector of length(x) indicating the diffferent groups in x.
+#'A factor vector of length(x) indicating the different groups in x.
 #'
 #'@examples
 #'x <- c(1:3,14:12,6:9)

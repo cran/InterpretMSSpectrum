@@ -4,32 +4,43 @@
 \alias{GenerateMetaboliteSQLiteDB}
 \title{GenerateMetaboliteSQLiteDB.}
 \usage{
-GenerateMetaboliteSQLiteDB(dbfile = "SQLite_APCI.db", ionization = c("APCI",
-  "ESI")[1], mass_range = c(80, 160), ncores = 2)
+GenerateMetaboliteSQLiteDB(
+  dbfile = "SQLite_APCI.db",
+  ionization = c("APCI", "ESI")[1],
+  mass_range = c(100, 105),
+  ncores = 1,
+  silent = TRUE
+)
 }
 \arguments{
-\item{dbfile}{path and filename of the final SQLiteDB.}
+\item{dbfile}{Path and file name of the final SQLiteDB or NULL to return the data frame.}
 
-\item{ionization}{Has to be specified to account for different plausibility rules and elemental composition.}
+\item{ionization}{Has to be specified to account for different plausibility rules and
+elemental composition.}
 
 \item{mass_range}{For testing use default range, otherwise use your measurement range.}
 
 \item{ncores}{Number of cores. Use as many as possible.}
+
+\item{silent}{Set to FALSE to get progress messages.}
 }
 \value{
-Returns NULL invisible. Will write an SQL_DB as specified by 'dbfile'.
+Returns the resulting data frame invisible. Will write an SQL_DB if 'dbfile'
+   provides a valid path and file name.
 }
 \description{
-\code{GenerateMetaboliteSQLiteDB} will set up a SQLite data base containing potential metabolite formulas, their masses and isotopic distribution for use with \link{InterpretMSSpectrum}.
+\code{GenerateMetaboliteSQLiteDB} will set up a SQLite data base containing
+   potential metabolite formulas, #' their masses and isotopic distribution for use with
+   \link{InterpretMSSpectrum}.
 }
 \details{
-The process takes a long time for larger masses (>400 Da). Parallel processing with 8 cores is highly recommended. Alternatively pre-processed versions can be downloaded on request to \email{jan.lisec@charite.de}. To process a 1 Da range (from 900 to 901) for ESI does take ~5minutes on 8 cores.
+The process takes a long time for larger masses (>400 Da). Parallel processing
+   with 8 cores is highly recommended. Alternatively pre-processed versions can be downloaded
+   on request to \email{jan.lisec@bam.de}. To process a 1 Da range (from 900 to 901) for
+   ESI does take approximately 5 minutes on 8 cores.
 }
 \examples{
-#this would be relatively fast, but for higher masses it is getting much slower
-\donttest{
-GenerateMetaboliteSQLiteDB(dbfile="APCI.db", ionization="APCI", mass_range=c(80,140), ncores=1)
-GenerateMetaboliteSQLiteDB(dbfile="ESI.db", ionization="ESI", mass_range=c(900,901), ncores=8)
-}
+# this would be relatively fast, but for higher masses it is getting much slower
+db <- GenerateMetaboliteSQLiteDB(dbfile = NULL)
 
 }

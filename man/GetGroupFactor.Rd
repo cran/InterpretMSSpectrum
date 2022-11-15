@@ -12,7 +12,7 @@ GetGroupFactor(x, gap)
 \item{gap}{Difference between two consecutive values at which a split is generated.}
 }
 \value{
-A factor vector of length(x) indicating the diffferent groups in x.
+A factor vector of length(x) indicating the different groups in x.
 }
 \description{
 \code{GetGroupFactor} will split a numeric vector according to a specified gap value. This is often a useful tool and therefore exported to the namespace.

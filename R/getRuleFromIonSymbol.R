@@ -1,18 +1,21 @@
-#' Generate adduct rule from ion symbol
+#' @title Generate adduct rule from ion symbols
 #' 
-#' Translate an ion symbol to an adduct rule. This function is used internally by \code{findMAIN}, but may be useful elsewhere.
+#' @description Translate an ion symbol to an adduct rule. This function is used 
+#'     internally by \code{findMAIN}, but may be useful elsewhere.
 #' 
 #' @param ions character vector of ion symbols, e.g. "[M+H]+", "[M+Na]+", 
-#'   "[M+H-NH3]-". Please use full notation in square brackets, though some 
-#'   frequent ions can be abbrevated ("M+H","M+Na","M+K","M+NH4", "M+", "M", 
-#'   "M-H","M+Cl-", "M-").
+#'     "[M+H-NH3]-". Please use full notation in square brackets, though some 
+#'     frequent ions can be abbreviated ("M+H","M+Na","M+K","M+NH4", "M+", "M", 
+#'     "M-H","M+Cl-", "M-").
 #'   
 #' @return A data frame with four columns "name", "nmol", "charge", "massdiff".
-#' @export
+#' 
 #' @keywords internal
+#' @noRd
 #'   
 #' @examples
-#' getRuleFromIonSymbol(c("[M+H]+", "[M+Na]+"))
+#' InterpretMSSpectrum:::getRuleFromIonSymbol(c("[M+H]+", "[M+Na]+"))
+#' 
 getRuleFromIonSymbol <- function(ions="[M+H]+") {
     checkSymbol <- function(ion) {
         regexpr("\\[[0-9]{0,2}M.*\\][0-9]{0,2}[\\+\\-]{1,2}", ion) != -1

@@ -1,20 +1,19 @@
-#'@title findiso.
+#' @title findiso.
 #'
-#'@description
-#'\code{findiso} will evaluate a mass spectrum and try to find the main isotopic clusters and adducts.
+#' @description \code{findiso} will evaluate a mass spectrum and try to find the main isotopic clusters and adducts.
 #'
-#'@details
-#'This function is used within \link{findMAIN} to identify main isotopic clusters.
+#' @details This function is used within \link{findMAIN} to identify main isotopic clusters.
 #'
-#'@param spec A two-column matrix with mz and int.
-#'@param intthr Do not consider isomain peaks below this intensity cutoff (relative to base peak).
-#'@param mzabs Expected maximum within scan mass defect of your device in Dalton.
-#'@param CAMERAlike T/F reformatting the result similar to a CAMERA isocluster search output.
+#' @param spec A two-column matrix with mz and int.
+#' @param intthr Do not consider 'isomain' peaks below this intensity cutoff (relative to base peak).
+#' @param mzabs Expected maximum within scan mass defect of your device in Dalton.
+#' @param CAMERAlike T/F reformatting the result similar to a 'CAMERA isocluster' search output.
 #'
-#'@return
-#'An annotated spectrum.
+#' @return
+#' An annotated spectrum.
 #'
-#'@keywords internal
+#' @keywords internal
+#' @noRd
 #'
 findiso <- function(spec=NULL, mzabs=0.001, intthr=0.03, CAMERAlike=TRUE) {
   ## helper function to determine main mz and charge of an isotopic group

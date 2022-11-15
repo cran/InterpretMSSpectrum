@@ -15,8 +15,10 @@ CountChemicalElements(x = NULL, ele = NULL)
 A named numeric with counts for all contained or specified elements.
 }
 \description{
-\code{CountChemicalElements} will split a character (chemical formula) into its elements and count their occurence.
+\code{CountChemicalElements} will split a character (chemical formula) 
+    into its elements and count their occurrence.
 }
 \details{
-No testing for any chemical alphabet is performed. Elements may occur several times and will be summed up in this case without a warning.
+No testing for any chemical alphabet is performed. Elements may occur 
+    several times and will be summed up in this case without a warning.
 }

@@ -1,29 +1,33 @@
-#'@title GenerateMetaboliteSQLiteDB.
+#' @title GenerateMetaboliteSQLiteDB.
 #'
-#'@description
-#'\code{GenerateMetaboliteSQLiteDB} will set up a SQLite data base containing potential metabolite formulas, their masses and isotopic distribution for use with \link{InterpretMSSpectrum}.
+#' @description \code{GenerateMetaboliteSQLiteDB} will set up a SQLite data base containing
+#'    potential metabolite formulas, #' their masses and isotopic distribution for use with
+#'    \link{InterpretMSSpectrum}.
 #'
-#'@details
-#'The process takes a long time for larger masses (>400 Da). Parallel processing with 8 cores is highly recommended. Alternatively pre-processed versions can be downloaded on request to \email{jan.lisec@charite.de}. To process a 1 Da range (from 900 to 901) for ESI does take ~5minutes on 8 cores.
+#' @details The process takes a long time for larger masses (>400 Da). Parallel processing
+#'    with 8 cores is highly recommended. Alternatively pre-processed versions can be downloaded
+#'    on request to \email{jan.lisec@bam.de}. To process a 1 Da range (from 900 to 901) for
+#'    ESI does take approximately 5 minutes on 8 cores.
 #'
-#'@param dbfile path and filename of the final SQLiteDB.
-#'@param ionization Has to be specified to account for different plausibility rules and elemental composition.
-#'@param mass_range For testing use default range, otherwise use your measurement range.
-#'@param ncores Number of cores. Use as many as possible.
+#' @param dbfile Path and file name of the final SQLiteDB or NULL to return the data frame.
+#' @param ionization Has to be specified to account for different plausibility rules and
+#'    elemental composition.
+#' @param mass_range For testing use default range, otherwise use your measurement range.
+#' @param ncores Number of cores. Use as many as possible.
+#' @param silent Set to FALSE to get progress messages.
 #'
-#'@return
-#'Returns NULL invisible. Will write an SQL_DB as specified by 'dbfile'.
+#' @return Returns the resulting data frame invisible. Will write an SQL_DB if 'dbfile'
+#'    provides a valid path and file name.
 #'
-#'@examples
-#'#this would be relatively fast, but for higher masses it is getting much slower
-#'\donttest{
-#'GenerateMetaboliteSQLiteDB(dbfile="APCI.db", ionization="APCI", mass_range=c(80,140), ncores=1)
-#'GenerateMetaboliteSQLiteDB(dbfile="ESI.db", ionization="ESI", mass_range=c(900,901), ncores=8)
-#'}
+#' @examples
+#' # this would be relatively fast, but for higher masses it is getting much slower
+#' db <- GenerateMetaboliteSQLiteDB(dbfile = NULL)
 #'
-#'@export
+#' @importFrom Rdisop initializeElements decomposeMass
 #'
-GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("APCI","ESI")[1], mass_range=c(80,160), ncores=2) {
+#' @export
+#'
+GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("APCI","ESI")[1], mass_range=c(100,105), ncores=1, silent = TRUE) {
   if (ionization=="ESI") {
     allowed_elements <- c("C","H","N","O","P","S","Cl")
     maxElements="P4S4Cl2"
@@ -38,15 +42,39 @@ GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("AP
   mmax <- mass_range[2]
   dmz <- 0.001*2^ifelse(mmin<100,14,ifelse(mmin<300,10,ifelse(mmin<1000,1,ifelse(mmin<1400,0))))
 
+  # check for parallel and doParallel to be able to keep it in suggested packages
+  check_pkg <- sapply(c("parallel", "doParallel"), requireNamespace, quietly = TRUE)
+  if (!all(check_pkg) && !(ncores==1)) {
+    msg <- paste0(
+      "The use of this function in parallel mode requires package", ifelse(sum(!check_pkg)>1, "s", ""),
+      paste(names(check_pkg)[!check_pkg], collapse=", "),
+      ". Please install. Running with 'ncores'=1."
+    )
+    ncores <- 1
+  }
+  
+  # check for RSQLite and DBI to be able to keep it in suggested packages
+  check_pkg <- sapply(c("RSQLite", "DBI"), requireNamespace, quietly = TRUE)
+  if (!all(check_pkg) && !is.null(dbfile)) {
+    msg <- paste0(
+      "The data frame export as SQL DB requires package", ifelse(sum(!check_pkg)>1, "s", ""),
+      paste(names(check_pkg)[!check_pkg], collapse=", "),
+      ". Please install. Running with 'dbfile'=NULL."
+    )
+    dbfile <- NULL
+  }
+  
   # process small fractions of mass range, either
   # PARALLEL
   if (ncores>1) {
     doParallel::registerDoParallel(parallel::makeCluster(ncores))
     dmz <- 0.001
     isotopes <- matrix(allowed_elements,ncol=1)
-    empty_result <- data.frame("Formula"=I(character(0)), "Valid"=character(0), "Mass"=numeric(0),
-                               "m0"=numeric(0), "m1"=numeric(0), "m2"=numeric(0), "m3"=numeric(0), 
-                               "a0"=numeric(0), "a1"=numeric(0), "a2"=numeric(0), "a3"=numeric(0))
+    empty_result <- data.frame(
+      "Formula"=I(character(0)), "Valid"=character(0), "Mass"=numeric(0),
+      "m0"=numeric(0), "m1"=numeric(0), "m2"=numeric(0), "m3"=numeric(0), 
+      "a0"=numeric(0), "a1"=numeric(0), "a2"=numeric(0), "a3"=numeric(0)
+    )
     suppressWarnings(
     res <- plyr::ldply(seq(mmin+dmz, mmax-dmz, by=2*0.001), function(mz) {
       molecules <- Rdisop::decomposeMass(mass=mz, mzabs=dmz, ppm=0, z=1, maxisotopes=4, elements=elements, minElements="C1", maxElements=maxElements)
@@ -69,7 +97,7 @@ GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("AP
     mtmp <- mmin+dmz
     while (mmin<mmax && os<4*1024^3) {
       molecules <- Rdisop::decomposeMass(mass=mtmp, mzabs=dmz, ppm=0, z=1, maxisotopes=4, elements=elements, minElements="C1", maxElements=maxElements)
-      cat(paste("\nmz =", mtmp, "; mzabs =", dmz, "; nmolecules =", length(molecules[[1]]), "; ntotal =", nrow(res), "; ", format(utils::object.size(res), units="Gb")))
+      if (!silent) cat(paste("\nmz =", mtmp, "; mzabs =", dmz, "; nmolecules =", length(molecules[[1]]), "; ntotal =", nrow(res), "; ", format(utils::object.size(res), units="Gb")))
       mmin <- mtmp+dmz
       if (!is.null(molecules)) {
         out <- data.frame("Formula"=I(molecules$formula), "Valid"=molecules$valid, "Mass"=molecules$exactmass)
@@ -83,28 +111,30 @@ GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("AP
       os <- utils::object.size(res)
     }
   }
-  #save(res, file="res.RData")
 
-# remove redundancies
+  # remove redundancies
   if (any(duplicated(res[,1]))) {
-    cat("\nRemoving redundancies...")
+    if (!silent) cat("\nRemoving redundancies...")
     res <- res[!duplicated(res[,1]),]
   }
 
-# stop cluster
+  # stop cluster
   if (ncores>1) {
-    cat("\nStopping cluster and quit...")
+    if (!silent) cat("\nStopping cluster and quit...")
     doParallel::stopImplicitCluster()
   }
   
-# make SQLite-DB out of res
-  cat("\nWriting DB File...\n\n")
-  con <- DBI::dbConnect(RSQLite::SQLite(), dbfile)
-  DBI::dbWriteTable(conn=con, name="sfdb", res, append=F, overwrite=T)
-  db <- DBI::dbSendQuery(con, "CREATE INDEX idx ON sfdb (Mass)")
-  DBI::dbClearResult(db)
-  DBI::dbDisconnect(con)
+  # make SQLite-DB out of res
+  if (!is.null(dbfile) && length(dbfile)==1 && file.exists(dirname(dbfile))) {
+    # && basename(dbfile)
+    if (!silent) cat("\nWriting DB File...\n\n")
+    con <- DBI::dbConnect(RSQLite::SQLite(), dbfile)
+    DBI::dbWriteTable(conn=con, name="sfdb", res, append=F, overwrite=T)
+    db <- DBI::dbSendQuery(con, "CREATE INDEX idx ON sfdb (Mass)")
+    DBI::dbClearResult(db)
+    DBI::dbDisconnect(con)
+  }
   
-  invisible(NULL)
+  invisible(res)
 
 }

@@ -4,9 +4,18 @@
 \alias{findMAIN}
 \title{findMAIN.}
 \usage{
-findMAIN(spec, adductmz = NULL, ionmode = c("positive", "negative")[1],
-  adducthyp = NULL, ms2spec = NULL, rules = NULL, mzabs = 0.01,
-  ppm = 5, mainpkthr = 0.005, collapseResults = TRUE)
+findMAIN(
+  spec,
+  adductmz = NULL,
+  ionmode = c("positive", "negative")[1],
+  adducthyp = NULL,
+  ms2spec = NULL,
+  rules = NULL,
+  mzabs = 0.01,
+  ppm = 5,
+  mainpkthr = 0.005,
+  collapseResults = TRUE
+)
 }
 \arguments{
 \item{spec}{A mass spectrum. Either a matrix or data frame, the first two columns of which are assumed to contain the 'mz' and 'intensity' values, respectively.}
@@ -33,11 +42,16 @@ findMAIN(spec, adductmz = NULL, ionmode = c("positive", "negative")[1],
 A list-like 'findMAIN' object for which 'print', 'summary' and 'plot' methods are available.
 }
 \description{
-\code{findMAIN} will evaluate an ESI spectrum for the potential main adducts, rank obtained suggestions and allow the deduction of the neutral mass of the measured molecule.
+\code{findMAIN} will evaluate an ESI spectrum for the potential main adducts, 
+    rank obtained suggestions and allow the deduction of the neutral mass of the measured 
+    molecule.
 }
 \details{
-Electrospray ionization (ESI) mass spectra frequently contain a number of different adduct ions, multimers and in-source fragments ([M+H]+, [M+Na]+, [2M+H]+, [M+H-H2O]+), making it difficult to decide on the compound's neutral mass.
-This functions aims at determining the main adduct ion and its type (protonated, sodiated etc.) of a spectrum, allowing subsequent database searches e.g. using MS-FINDER, SIRIUS or similar.
+Electrospray ionization (ESI) mass spectra frequently contain a number of different 
+    adduct ions, multimers and in-source fragments \code{[M+H]+, [M+Na]+, [2M+H]+, [M+H-H2O]+}, 
+    making it difficult to decide on the compound's neutral mass. This functions aims 
+    at determining the main adduct ion and its type (protonated, sodiated etc.) of a spectrum, 
+    allowing subsequent database searches e.g. using MS-FINDER, SIRIUS or similar.
 }
 \examples{
 \donttest{
@@ -45,10 +59,10 @@ utils::data(esi_spectrum, package = "InterpretMSSpectrum")
 fmr <- findMAIN(esi_spectrum)
 plot(fmr)
 head(summary(fmr))
-InterpretMSSpectrum(fmr[[1]], precursor=263, ionization="ESI+", formula_db="ESI.db")
+InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
 }
 
 }
 \references{
-Jaeger C, Meret M, Schmitt CA, Lisec J (2017), DOI: 10.1002/rcm.7905.
+Jaeger C, Meret M, Schmitt CA, Lisec J (2017), <doi:10.1002/rcm.7905>.
 }

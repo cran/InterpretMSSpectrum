@@ -1,23 +1,21 @@
-#'@title is.subformula.
+#' @title is.subformula.
 #'
-#'@description
-#'\code{is.subformula} will test for all elements of one chemical formula (f_sub) to be present in another (f_main).
+#' @description \code{is.subformula} will test for all elements of one chemical formula (f_sub) to be present in another (f_main).
 #'
-#'@details
-#'To achieve the task formulas are split into elements and counted using \link{CountChemicalElements}.
+#' @details To achieve the task formulas are split into elements and counted using \link{CountChemicalElements}.
 #'
-#'@param f_sub Supposed chemical sub formula.
-#'@param f_main Supposed chemical main formula.
-#'@param substitutions dataframe of allowed substitutions to consider.
+#' @param f_sub Supposed chemical sub formula.
+#' @param f_main Supposed chemical main formula.
+#' @param substitutions data frame of allowed substitutions to consider.
 #'
-#'@return
-#'Logical indicating if f_sub is potentially a subformula of f_main.
+#' @return Logical indicating if 'f_sub' is potentially a sub formula of 'f_main'.
 #'
-#'@examples
-#'InterpretMSSpectrum:::is.subformula(f_sub="C6H12O6", f_main="C6H12O6")
-#'InterpretMSSpectrum:::is.subformula(f_sub="C4H8O5", f_main="C6H12O6")
+#' @examples
+#' InterpretMSSpectrum:::is.subformula(f_sub = "C6H12O6", f_main = "C6H12O6")
+#' InterpretMSSpectrum:::is.subformula(f_sub = "C4H8O5", f_main = "C6H12O6")
 #'
-#'@keywords internal
+#' @keywords internal
+#' @noRd
 #'
 is.subformula <- function(f_sub, f_main, substitutions=NULL) {
   ExtrChemElem <-  function (x) {

@@ -1,18 +1,17 @@
-#'@title CountChemicalElements.
+#' @title CountChemicalElements.
 #'
-#'@description
-#'\code{CountChemicalElements} will split a character (chemical formula) into its elements and count their occurence.
+#' @description \code{CountChemicalElements} will split a character (chemical formula) 
+#'     into its elements and count their occurrence.
 #'
-#'@details
-#'No testing for any chemical alphabet is performed. Elements may occur several times and will be summed up in this case without a warning.
+#' @details No testing for any chemical alphabet is performed. Elements may occur 
+#'     several times and will be summed up in this case without a warning.
 #'
-#'@param x Chemical formula.
-#'@param ele Character vector of elements to count particularly or counting all contained if NULL.
+#' @param x Chemical formula.
+#' @param ele Character vector of elements to count particularly or counting all contained if NULL.
 #'
-#'@return
-#'A named numeric with counts for all contained or specified elements.
+#' @return A named numeric with counts for all contained or specified elements.
 #'
-#'@export
+#' @export
 #'
 CountChemicalElements <- function(x = NULL, ele = NULL) {
     # count all elements present within 'x'

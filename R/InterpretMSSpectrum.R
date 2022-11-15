@@ -1,104 +1,135 @@
-#'@title Interpreting High-Res-MS spectra.
+#' @title Interpreting High-Res-MS spectra.
 #'
-#'@description
-#'\code{InterpretMSSpectrum} will read, evaluate and plot a deconvoluted mass spectrum (mass*intensity pairs) from either TMS-derivatized GC-APCI-MS data or ESI+/- data. 
-#'The main purpose is to identify the causal metabolite or more precisely the sum formula of the molecular peak by annotating and interpreting all visible fragments and isotopes.
+#' @description \code{InterpretMSSpectrum} will read, evaluate and plot a deconvoluted 
+#'     mass spectrum (mass*intensity pairs) from either TMS-derivatized GC-APCI-MS data 
+#'     or ESI+/- data. The main purpose is to identify the causal metabolite or more 
+#'     precisely the sum formula of the molecular peak by annotating and interpreting 
+#'     all visible fragments and isotopes.
 #'
-#'@details
-#'For further details refer to and if using please cite Jaeger et al. (\url{http://dx.doi.org/10.1021/acs.analchem.6b02743}) in case of GC-APCI and Jaeger et al. 2017 (RCM, accepted) for ESI data.
-#'The Interpretation is extremely speed up if 'formula_db' (a predetermined database of potential sum formulas) is provided within the function call. Within the package you may use \link{GenerateMetaboliteSQLiteDB} to prepare one for yourself or request a download link from \email{jan.lisec@charite.de} as de novo claculation may take several days.
+#' @details For further details refer to and if using please cite 
+#'     Jaeger et al. (2016, <doi:10.1021/acs.analchem.6b02743>) in case of GC-APCI and 
+#'     Jaeger et al. (2017, <doi:10.1002/rcm.7905>) for ESI data. The Interpretation is 
+#'     extremely speed up if 'formula_db' (a predetermined database of potential sum 
+#'     formulas) is provided within the function call. Within the package you may use 
+#'     \link{GenerateMetaboliteSQLiteDB} to prepare one for yourself or request 
+#'     a download link from \email{jan.lisec@bam.de} as de-novo calculation for a wide 
+#'     mass range may take several days.
 #'
-#'@param spec A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum} tries to read data from clipboard (i.e. two columns copied from an Excel speadsheet).
-#'@param precursor The ion (m/z) from spec closest to this mass will be considered as precursor (can be nominal, i.e. if precursor=364 then 364.1234 would be selected from spectrum if it is closest).
-#'@param correct_peak For testing purposes. A character in the form of "name, formula, mz" to evaluate spectra against. Note! Sperating character is ', '.
-#'@param met_db A metabolite DB (e.g. GMD or internal) can be provided to search for candidates comparing M+H ions (cf. Examples).
-#'@param typical_losses_definition A file name (e.g. D:/BuildingBlocks_GCAPCI.txt) from where to load relevant neutral losses (cf. Details). Alternatively an dataframe with columns Name, Formula and Mass.
-#'@param silent Logical. If TRUE no plot is generated and no output except final candidate list is returned.
-#'@param dppm Specifies ppm error for Rdisop formula calculation.
-#'@param score_cutoff Specifies initial filtering step threshold per fragment. Sum Formulas with score_i < score_cutoff*max(score) will be removed.
-#'@param neutral_loss_cutoff Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list. If NULL determined dependent on ionization.
-#'@param ionization Currently 'APCI' or 'ESI-' or 'ESI+' are supported as ionization modes.
-#'@param quick_isos There are two ways to compute isotope pattern for comparison, a fast but error prone using Rdisop and a slow but (more) correct using enviPat.
-#'@param formula_db A predetermined database of sum formulas and their isotopic fine structures can be used to extremely speed up the function.
+#' @param spec A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum} 
+#'     tries to read data from clipboard (i.e. two columns copied from an Excel spreadsheet).
+#' @param precursor The ion (m/z) from spec closest to this mass will be considered as 
+#'     precursor (can be nominal, i.e. if precursor=364 then 364.1234 would be selected from 
+#'     spectrum if it is closest).
+#' @param correct_peak For testing purposes. A character in the form of "name, formula, mz" 
+#'     to evaluate spectra against. Note! Separating character is ', '.
+#' @param met_db A metabolite DB (e.g. GMD or internal) can be provided to search for 
+#'     candidates comparing M+H ions (cf. Examples).
+#' @param typical_losses_definition A file name (e.g. D:/BuildingBlocks_GCAPCI.txt) from 
+#'     where to load relevant neutral losses (cf. Details). Alternatively an data frame with 
+#'     columns 'Name', 'Formula' and 'Mass'.
+#' @param silent Logical. If TRUE no plot is generated and no output except final candidate 
+#'     list is returned.
+#' @param dppm Specifies ppm error for Rdisop formula calculation.
+#' @param param Either a list of parameters or a character shortcut indicating a predefined 
+#'     set. Currently 'APCIpos', 'ESIpos' and 'ESIneg' are supported as shortcuts and can be 
+#'     loaded with i.e. data(APCIpos).
+#' @param formula_db A pre calculated database of sum formulas and their isotopic fine 
+#'     structures can be used to extremely speed up the function.
 #'
-#'@return
-#'An annotated plot of the mass spectrum and detailed information within the console.
-#'Main result, list of final candidate formulas and their putative fragments, will be returned invisibly.
+#' @return An annotated plot of the mass spectrum and detailed information within the 
+#'     console. Main result, list of final candidate formulas and their putative fragments, 
+#'     will be returned invisibly.
 #'
-#'@examples
-#'#load test data
-#'utils::data(apci_spectrum)
+#' @examples
+#' # load test data
+#' utils::data(apci_spectrum)
 #'
-#'# provide information of a correct peak (if you know)
-#'correct_peak <- "Glutamic acid (3TMS), C14H33NO4Si3, 364.1790"
+#' # provide information of a correct peak (if you know) as a character containing
+#' # name, formula and ion mass -- separated by ', ' as shown below
+#' cp <- "Glutamic acid (3TMS), C14H33NO4Si3, 364.1790"
 #'
-#'# provide database of known peaks and correct peak
-#'met_db <- data.frame("Name"=c("Glutamic acid (3TMS)","other peak with same sum formula"),
-#'                     "Formula"=c("C14H33NO4Si3","C14H33NO4Si3"), 
-#'                     "M+H"=c(364.179,364.179), stringsAsFactors=FALSE, check.names=FALSE)
-#'                     
-#'# apply function providing above arguments (dppm is set to 0.5 to reduce run time)
-#'res <- InterpretMSSpectrum(spec=apci_spectrum, correct_peak=correct_peak, met_db=met_db, dppm=0.5)
+#' # provide database of known peaks and correct peak
+#' mdb <- data.frame(
+#'   "Name" = c("Glutamic acid (3TMS)", "other peak with same sum formula"),
+#'   "Formula" = c("C14H33NO4Si3", "C14H33NO4Si3"),
+#'   "M+H" = c(364.179, 364.179), stringsAsFactors = FALSE, check.names = FALSE
+#' )
+#' 
+#' # provide a database of precalculated formulas to speed up the process
+#' fdb <- system.file("extdata", "APCI_min.db", package = "InterpretMSSpectrum")
 #'
-#'# show final function result (score-sorted list of potential fragment trees)
-#'str(res)
-#'\donttest{
-#'#Given that you installed a prepared formula data base you can check performance increase by
-#'setwd("D:/Bruker/R/Rpackage_InterpretMSSpectrum/")
-#'system.time(InterpretMSSpectrum(spec=apci_spectrum, dppm=0.5, formula_db="APCI.db"))
-#'system.time(InterpretMSSpectrum(spec=apci_spectrum, dppm=0.5, formula_db=NULL))
-#'data(esi_spectrum)
-#'plot(InterpretMSSpectrum::findMAIN(spec=esi_spectrum))
-#'system.time(
-#'InterpretMSSpectrum(spec=esi_spectrum, dppm=0.5, ionization="ESI+", formula_db="ESI.db")
-#')
-#'system.time(
-#'InterpretMSSpectrum(spec=esi_spectrum, dppm=0.5, formula_db=NULL)
-#')
-#'}
+#' # apply function providing above arguments (dppm is set to 0.5 to reduce run time)
+#' InterpretMSSpectrum(spec=apci_spectrum, correct_peak=cp, met_db=mdb, formula_db=fdb)
 #'
-#'@export
+#' @export
 #'
-#'@import Rdisop
-#'@import enviPat
-#'@importFrom graphics mtext
-#'@importFrom grDevices grey
-#'@importFrom utils data read.table
-#'
-InterpretMSSpectrum <-
-function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_losses_definition=NULL, silent=FALSE, dppm=3, score_cutoff=0.5, neutral_loss_cutoff=NULL, ionization=c("APCI","ESI+","ESI-")[1], quick_isos=TRUE, formula_db=NULL) {
+#' @importFrom Rdisop decomposeIsotopes decomposeMass initializeElements
+#' @importFrom enviPat check_chemform mergeform
+#' @importFrom graphics mtext
+#' @importFrom grDevices grey
+#' @importFrom utils data read.table
+
+InterpretMSSpectrum <- function(
+  spec=NULL, 
+  precursor=NULL, 
+  correct_peak=NULL, 
+  met_db=NULL, 
+  typical_losses_definition=NULL, 
+  silent=FALSE, 
+  dppm=3, 
+  param="APCIpos", 
+  formula_db=NULL
+) {
 
   # POTENTIAL PARAMETERS that could be allowed for the user to modify
   # !!! carefull limiting (to maximum of 5 peaks) is experimental
   max_isomain_peaks <- 5
   
-  stopifnot(ionization %in% c("APCI","ESI+","ESI-","ESI"))
-  if (substr(ionization,nchar(ionization),nchar(ionization))%in%c("+","-")) {
-    ionmode <- ifelse(substr(ionization,nchar(ionization),nchar(ionization))=="+","positive","negative")
-    ionization <- substr(ionization,1,nchar(ionization)-1)
-  } else {
-    ionmode <- "positive"
-  }
+  stopifnot(is.list(param) | param %in% c("APCIpos","ESIpos","ESIneg"))
 
-  if (ionization=="ESI") {
-    #allowed_elements <- c("C","H","N","O","P","S","Cl","Na","K")
-    #maxElements="P4S4Na2K2"
-    #substitutions <- data.frame("s1"=c("H1","H1","Na1","Na1","K1"),"s2"=c("Na1","K1","K1","H1","H1"))
-    allowed_elements <- c("C","H","N","O","P","S","Cl")
-    maxElements="P4S4"
-    substitutions <- data.frame("s1"=c("H1","H1","Na1"),"s2"=c("Na1","K1","K1"))
-    if (is.null(neutral_loss_cutoff)) neutral_loss_cutoff <- 2
-    #quick_isos <- TRUE
+  # param.default <- list("ionization"="ESI",
+  #                       "ionmode"="positive",
+  #                       "allowed_elements"=c("C","H","N","O","P","S","Cl","Na","K"), # for Rdisop formula generation
+  #                       "maxElements"="P4S4Na2K2", # for Rdisop formula generation
+  #                       "minElements"="C1",
+  #                       "substitutions"=data.frame("s1"=c("H1","H1","Na1","Na1","K1"),"s2"=c("Na1","K1","K1","H1","H1")),
+  #                       "quick_isos"=TRUE,
+  #                       "score_cutoff"=0.5,
+  #                       "neutral_loss_cutoff"=2)
+  # save(param.default, file = "Data/param.default.RData", compress = "gzip")
+
+  # load default parameters
+  # using a parameter set is an attempt to summarize a number of parameters useful for either GC-APCI or LC-ESI
+  # however, to be more flexible this parameterset can be provided directly as a list
+  param.default <- NULL
+  utils::data(param.default, envir=environment(), package = "InterpretMSSpectrum")
+  
+  # now modify values of the default parameter set according to the provided option in 'param'
+  if (is.list(param)) {
+    for (n in names(param)) param.default[[n]] <- param[[n]]
+  } else {
+    if (param=="APCIpos") {
+      param.default$"ionization" <- "APCI"
+      param.default$"allowed_elements" <- c("C","H","N","O","P","S","Si")
+      param.default$"maxElements" <- "P2S2"
+      param.default["substitutions"] <- list(NULL)
+      param.default$"neutral_loss_cutoff" <- 0.5
+      param.default$"quick_isos" <- FALSE
+    }
+    if (substr(param,1,3)=="ESI") {
+      param.default$"allowed_elements" <- c("C","H","N","O","P","S","Cl")
+      param.default$"maxElements" <- "P4S4"
+      param.default$"substitutions" <- data.frame("s1"=c("H1","H1","Na1"),"s2"=c("Na1","K1","K1"))
+    }
+    if (substr(param,nchar(param)-2,nchar(param))=="pos") {
+      param.default$"ionmode" <- "positive"
+    } else {
+      param.default$"ionmode" <- "negative"
+    }
   }
-  if (ionization=="APCI") {
-    allowed_elements <- c("C","H","N","O","P","S","Si")
-    maxElements="P2S2"
-    substitutions <- NULL
-    if (is.null(neutral_loss_cutoff)) neutral_loss_cutoff <- 0.5
-    #quick_isos <- FALSE
-  }
-  em <- 0.00055
-  #browser()
+  param <- param.default
+  param$"isotopes" <- as.matrix(param$"allowed_elements",ncol=1)
+  param$"iso_mass" <- ifelse(param$"ionization"=="APCI",1.0015,1.003355)
   
   # Input CHECKS
   # correct_peak
@@ -110,11 +141,11 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     if (length(tmp)>3) tmp <- c(paste(tmp[1:(length(tmp)-2)],collapse=","),tmp[-(1:(length(tmp)-2))]) 
     if (!test && is.na(as.numeric(tmp[3]))) test <- TRUE; msg <- "cant convert 3rd component to numeric"
     #if (!test && enviPat::check_chemform(isotopes=data.frame("element"=allowed_elements,"isotope"="X","mass"=0,"abundance"=0), tmp[2])$warning) test <- TRUE
-    if (!test && enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), tmp[2])$warning) {
+    if (!test && enviPat::check_chemform(isotopes=param$isotopes, tmp[2])$warning) {
       test <- TRUE
       msg <- "formula check of 2nd component failed"
     } else {
-      tmp[2] <- enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), tmp[2])$new_formula
+      tmp[2] <- enviPat::check_chemform(isotopes=param$isotopes, tmp[2])$new_formula
       # store formula for later use seperately
       fml <- enviPat::mergeform(tmp[2], "H1")
       correct_peak <- paste(tmp, collapse=", ")
@@ -139,7 +170,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
       met_db[,"M+H"] <- as.numeric(met_db[,"M+H"])
       met_db <- met_db[!is.na(met_db[,"M+H"]),,drop=FALSE]
       if (nrow(met_db)==0) test <- TRUE else met_db <- met_db[!(is.na(met_db[,"Formula"]) | met_db[,"Formula"]==""),,drop=FALSE]
-      if (nrow(met_db)==0) test <- TRUE else met_db <- met_db[!enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), met_db[,"Formula"])$warning,,drop=FALSE]
+      if (nrow(met_db)==0) test <- TRUE else met_db <- met_db[!enviPat::check_chemform(isotopes=param$isotopes, met_db[,"Formula"])$warning,,drop=FALSE]
       if (nrow(met_db)==0) test <- TRUE
     }
     if (test) {
@@ -151,8 +182,18 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
   sf_db <- FALSE
   if (!is.null(formula_db)) {
     if (is.character(formula_db) && length(formula_db)==1 && file.exists(formula_db)) {
-      db_con <- DBI::dbConnect(RSQLite::SQLite(), formula_db)
-      sf_db <- ifelse(class(db_con)=="SQLiteConnection", TRUE, FALSE)
+      check_pkg <- sapply(c("RSQLite", "DBI"), requireNamespace, quietly = TRUE)
+      if (!all(check_pkg)) {
+        msg <- paste0(
+          "The use a predefined Database requires package", ifelse(sum(!check_pkg)>1, "s", ""),
+          paste(names(check_pkg)[!check_pkg], collapse=", "),
+          ". Please install. Running with 'formula_db'=NULL."
+        )
+        formula_db <- NULL
+      } else {
+        db_con <- DBI::dbConnect(RSQLite::SQLite(), formula_db)
+        sf_db <- ifelse(class(db_con)=="SQLiteConnection", TRUE, FALSE)
+      }
     }
     # if (prod(dim(formula_db))>1 && all(c("Formula","Mass","m0","a0") %in% colnames(formula_db))) {
     #   # allow data.frame in parallel to SQLite DB ???
@@ -162,13 +203,12 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
   
   # load neutral loss table
   if (is.null(typical_losses_definition)) {
-    #utils::data(paste("neutral_losses",ionization,sep="_"), envir=environment())
-    if (ionization=="APCI") {
+    if (param$ionization=="APCI") {
       neutral_losses_APCI <- NULL
       utils::data(neutral_losses_APCI, envir=environment(), package = "InterpretMSSpectrum")
       neutral_losses <- neutral_losses_APCI
     }
-    if (ionization=="ESI") {
+    if (param$ionization=="ESI") {
       neutral_losses_ESI <- NULL
       utils::data(neutral_losses_ESI, envir=environment(), package = "InterpretMSSpectrum")
       neutral_losses <- neutral_losses_ESI
@@ -181,7 +221,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     }
   }
   # ensure proper formula in neutral_loss table (for later add/sub-molecule functions)
-  neutral_losses[,"Formula"] <- enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), neutral_losses[,"Formula"])[,"new_formula"]
+  neutral_losses[,"Formula"] <- enviPat::check_chemform(isotopes=param$isotopes, neutral_losses[,"Formula"])[,"new_formula"]
   
   # internal functions
   ReadSpecClipboard <- function() {
@@ -196,9 +236,8 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     if (ncol(spec)>=3) spec <- spec[,-1]
     return(spec)
   }
-  GetFragmentData <- function(M0=NULL, spec=NULL, n=2, ionization="APCI") {
+  GetFragmentData <- function(M0=NULL, spec=NULL, n=2, iso_mass=1.003355) {
     # try to get reasonable isotope peaks for M0 from spectrum
-    iso_mass <- ifelse(ionization=="APCI",1.0015,1.0034)
     p <- sapply(0:n, function(dmz) { 
       tmp <- which(abs((M0+dmz*iso_mass)-spec[,1])<0.01)
       if (length(tmp)>1) {
@@ -211,22 +250,23 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     attr(frag, "M0") <- M0
     return(frag)
   }
-  EvaluateFragment <- function(frag=NULL, em=0.00055, dppm=3, score_cutoff=0, allowed_elements=c("C","H","N","O","P","S","Si"), ionization="APCI", ionmode="positive", silent=FALSE, maxElements="C60", quick_isos=FALSE, sf_db=NULL) {
+  EvaluateFragment <- function(frag=NULL, dppm=3, param = NULL, silent=FALSE, sf_db=NULL) {
     # we need to correct our observed fragment data with the mass of an electron (charge) being +/- 0.00055 depending on positive/negative mode
-    frag[1,] <- frag[1,]+ifelse(ionmode=="positive",1,-1)*em
+    em <- 0.00055
+    frag[1,] <- frag[1,]+ifelse(param$ionmode=="positive",1,-1)*em
     #browser()
     if (sf_db) {
-      # data base approach --> much faster compared to default sollution below
+      # data base approach --> much faster compared to default solution below
       dmz <- 0.0005+frag[1,1]*dppm/10^6
       dbq <- DBI::dbSendQuery(db_con, "SELECT * FROM sfdb WHERE Mass > (:x) AND Mass < (:y);", data.frame(x=frag[1,1]-dmz, y=frag[1,1]+dmz))
       out <- DBI::dbFetch(dbq, -1)
       DBI::dbClearResult(dbq)
       if (nrow(out)>=1) {
-        # adaptive algorithm to compute isopattern on the fly and fill sf_db over time...
+        # adaptive algorithm to compute isotopic pattern on the fly and fill sf_db over time...
         miss_iso <- is.na(out[,"m0"])
         if (any(miss_iso)) {
           #browser()
-          out[miss_iso,4:11] <- plyr::ldply(out[miss_iso,"Formula"], function(fml){matrix(t(GetIsotopeDistribution(fml=fml, res=30000, n=3, ele_vec=allowed_elements)),nrow=1)})
+          out[miss_iso,4:11] <- plyr::ldply(out[miss_iso,"Formula"], function(fml){matrix(t(GetIsotopeDistribution(fml=fml, res=30000, n=3, ele_vec=param$allowed_elements)),nrow=1)})
           #sf_db[mcand[miss_iso],4:11] <<- out[miss_iso,4:11]
         }
         # we predetermined 3 isotopes so we can compare at max 3 even if we find more within our spectrum...
@@ -244,9 +284,9 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     } else {
       # de novo calculation
       if (length(frag[1,])>=2) {
-        molecules <- Rdisop::decomposeIsotopes(frag[1,], frag[2,], mzabs=0.0005, ppm=dppm, z=1, maxisotopes=1+length(frag[1,]), elements=Rdisop::initializeElements(allowed_elements), minElements="C1", maxElements=maxElements)
+        molecules <- Rdisop::decomposeIsotopes(frag[1,], frag[2,], mzabs=0.0005, ppm=dppm, z=1, maxisotopes=1+length(frag[1,]), elements=Rdisop::initializeElements(param$allowed_elements), minElements=param$minElements, maxElements=param$maxElements)
       } else {
-        molecules <- Rdisop::decomposeMass(frag[1,], mzabs=0.0005, ppm=dppm, z=1, maxisotopes=1, elements=Rdisop::initializeElements(allowed_elements), minElements="C1", maxElements=maxElements)
+        molecules <- Rdisop::decomposeMass(frag[1,], mzabs=0.0005, ppm=dppm, z=1, maxisotopes=1, elements=Rdisop::initializeElements(param$allowed_elements), minElements=param$minElements, maxElements=param$maxElements)
       }
       if (is.null(molecules)) {
         out <- data.frame("Formula"=I(character(0)),"Score"=numeric(0),"Valid"=character(0),"Mass"=numeric(0))
@@ -255,10 +295,10 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
         out <- data.frame("Formula"=I(molecules$formula), "Score"=molecules$score, "Valid"=molecules$valid, "Mass"=molecules$exactmass)
         attr(out, "M0") <- attr(frag, "M0")
         # extract isotope fine structure
-        if (ionization=="APCI" & !quick_isos) {
+        if (param$ionization=="APCI" & !param$quick_isos) {
           # for APCI data the Rdisop isotope distribution is less correct and can be better estimated using enviPat
           isos <- lapply(1:nrow(out), function(j) { 
-            x <- GetIsotopeDistribution(fml=out[j,"Formula"], res=30000, n=2, ele_vec=allowed_elements) 
+            x <- GetIsotopeDistribution(fml=out[j,"Formula"], res=30000, n=2, ele_vec=param$allowed_elements) 
             # fall back sollution for no C suggestions
             if (ncol(x)<=2) {
               x <- molecules[["isotopes"]][[j]]
@@ -269,7 +309,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
             return(x)
           })
         }
-        if (ionization=="ESI" | quick_isos) {
+        if (param$ionization=="ESI" | param$quick_isos) {
           isos <- lapply(molecules[["isotopes"]], function(x) {
             x[1,] <- x[1,]
             x[2,] <- x[2,]/sum(x[2,])
@@ -283,7 +323,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
           mScore(obs=frag[,1:max_iso,drop=FALSE], the=isos[[j]][,1:max_iso,drop=FALSE], dppm=dppm)
         })
         # ensure with enviPat valid chemical formulas (necessary for neutral loss detection and scoring later)
-        out[,"Formula"] <- enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), out[,"Formula"])[,"new_formula"]
+        out[,"Formula"] <- enviPat::check_chemform(isotopes=param$isotopes, out[,"Formula"])[,"new_formula"]
       }
     }
     out <- out[order(out[,"Score"], decreasing = TRUE),,drop=F]
@@ -305,21 +345,21 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     }
     return(rdisop_res)
   }
-  GetRdisopResult <- function(spec=NULL, isomain=NULL, silent=TRUE, em=0.00055, dppm=3, allowed_elements=allowed_elements, ionization=ionization, ionmode=ionmode, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db) {
+  GetRdisopResult <- function(spec=NULL, isomain=NULL, silent=TRUE, dppm=3, param = NULL, sf_db=sf_db) {
     if (!is.null(attr(isomain,"adducthyp"))) {
       rdisop_res <- lapply(isomain, function(M0) {
-        frag <- GetFragmentData(M0=M0, spec=spec, n=3, ionization=ionization)
+        frag <- GetFragmentData(M0=M0, spec=spec, n=3, iso_mass = param$iso_mass)
         if (M0==isomain[length(isomain)]) {
           #to calculate de nove sum formulas we need to correct the MID for the (de)protonation
-          frag[1,] <- frag[1,]-attr(isomain,"adducthyp")+ifelse(ionmode=="positive",1,-1)*1.0073
+          frag[1,] <- frag[1,]-attr(isomain,"adducthyp")+ifelse(param$ionmode=="positive",1,-1)*1.0073
         }
-        rdisop_res <- EvaluateFragment(frag=frag, em=em, dppm=2*dppm, allowed_elements=allowed_elements, silent=silent, ionization=ionization, ionmode=ionmode, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
+        rdisop_res <- EvaluateFragment(frag=frag, dppm=2*dppm, silent=silent, param = param, sf_db=sf_db)
         invisible(rdisop_res)
       })
     } else {
       rdisop_res <- lapply(isomain, function(M0) {
-        frag <- GetFragmentData(M0=M0, spec=spec, n=3, ionization=ionization)
-        rdisop_res <- EvaluateFragment(frag=frag, em=em, dppm=2*dppm, allowed_elements=allowed_elements, silent=silent, ionization=ionization, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
+        frag <- GetFragmentData(M0=M0, spec=spec, n=3, iso_mass = param$iso_mass)
+        rdisop_res <- EvaluateFragment(frag=frag, dppm=2*dppm, silent=silent, param = param, sf_db=sf_db)
         invisible(rdisop_res)
       })
     }
@@ -329,7 +369,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     rdisop_res <- lapply(rdisop_res, function(x) { x[x[,"Score"]>=(score_cutoff*max(x[,"Score"])),] })
     rdisop_res <- RemoveEmptyFragments(rdisop_res, silent=silent, step="RemoveByScore")
   }
-  GenerateMainOutput <- function(rdisop_res_list, stats, met_db) {
+  GenerateMainOutput <- function(rdisop_res_list, stats, met_db, isomain) {
     cat(paste("\n\nTotal number of formulas per fragment before and after filtering...\n"))
     print(stats)
     rdisop_res_best <- rdisop_res_list[[1]]
@@ -339,7 +379,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     MH <- ifelse(nrow(rdisop_res_best)==1, 1, ifelse(abs(rdisop_res_best[nrow(rdisop_res_best),"Mass"]-rdisop_res_best[nrow(rdisop_res_best)-1,"Mass"]-72.0395)<0.0005, nrow(rdisop_res_best)-1, nrow(rdisop_res_best)))
     # check resulting candidate list against a DB for best matche
     if (!is.null(met_db)) {
-      met_db[,"Formula"] <- enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), met_db[,"Formula"])[,"new_formula"]
+      met_db[,"Formula"] <- enviPat::check_chemform(isotopes=param$isotopes, met_db[,"Formula"])[,"new_formula"]
       #M0 <- Rdisop::subMolecules(rdisop_res_best[MH,"Formula"], "H")$formula
       M0 <- enviPat::subform(rdisop_res_best[MH,"Formula"], "H1")
       if (any(met_db$Formula %in% M0)) {
@@ -365,7 +405,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     # set colors for spectra plot (isomain peaks get a red color)
     tmp.col <- rep(1,nrow(spec))
     tmp.col[which(spec[,1] %in% isomain)] <- 2
-    PlotSpec(x=spec, cols=tmp.col, txt=data.frame("mz"=rdisop_res_best[,"Mass"],"Formula"=rdisop_res_best[,"Formula"]), neutral_losses=neutral_losses, neutral_loss_cutoff=neutral_loss_cutoff, substitutions=substitutions, ionization=ionization)
+    PlotSpec(x=spec, cols=tmp.col, txt=data.frame("mz"=rdisop_res_best[,"Mass"],"Formula"=rdisop_res_best[,"Formula"]), neutral_losses=neutral_losses, neutral_loss_cutoff=param$neutral_loss_cutoff, substitutions=param$substitutions, ionization=param$ionization)
     graphics::mtext(paste("Remaining combinations:",length(rdisop_res_list)), line=-1.2, adj=0, side=3, col=grDevices::grey(0.5))
     graphics::mtext(best_cand, line=-2.4, adj=0, side=3, col=best_cand_col)
     if (!is.null(correct_peak)) {
@@ -373,7 +413,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
       fcor <- strsplit(correct_peak,", ")[[1]]
       fcor <- fcor[-1][grep("^C[[:digit:]]",fcor[-1])]
       if (length(fcor)==1) {
-        fcor <- enviPat::check_chemform(isotopes=as.matrix(allowed_elements,ncol=1), chemforms=fcor)
+        fcor <- enviPat::check_chemform(isotopes=param$isotopes, chemforms=fcor)
         if (fcor[,1]) {
           warning("[InterpretMSSpectrum] Probably a wrong specification of 'correct_peak'", call. = FALSE)
         } else {
@@ -414,7 +454,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     
     # evaluate main peaks
     #browser()
-    isomain <- DetermineIsomainPeaks(spec=spec, int_cutoff=0.03, precursor=precursor, ionization=ionization, ionmode=ionmode, limit=max_isomain_peaks)
+    isomain <- DetermineIsomainPeaks(spec=spec, int_cutoff=0.03, precursor=precursor, ionization=param$ionization, ionmode=param$ionmode, limit=max_isomain_peaks)
     
     # # modify spectra if no good [M+H] is found but alternative adduct hypothesis instead
     # if (!is.null(attr(isomain,"adducthyp"))) {
@@ -426,7 +466,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     # start timing for testing purposes
     time_elapse <- Sys.time()
     # use Rdisop to get potential formulas (using up to n=2 isotopic peaks found)
-    rdisop_res <- GetRdisopResult(spec=spec, isomain=isomain, silent=silent, em=em, dppm=dppm, allowed_elements=allowed_elements, ionization=ionization, ionmode=ionmode, maxElements=maxElements, quick_isos=quick_isos, sf_db=sf_db)
+    rdisop_res <- GetRdisopResult(spec=spec, isomain=isomain, silent=silent, dppm=dppm, param = param, sf_db=sf_db)
     stats[stats[,"mz"] %in% round(sapply(rdisop_res,attr,"M0"),4),"initial"] <- sapply(rdisop_res,nrow)
     if (!is.null(correct_peak)) {
       if (local_check==0 && length(grep(fml, rdisop_res[[length(rdisop_res)]][,1]))!=1) local_check <- 1
@@ -434,7 +474,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     time_elapse <- c(time_elapse, Sys.time())
     
     # remove according to individual score based on mz deviation and isotopic fit
-    rdisop_res <- RemoveByScore(rdisop_res, score_cutoff=score_cutoff, silent=silent)
+    rdisop_res <- RemoveByScore(rdisop_res, score_cutoff=param$score_cutoff, silent=silent)
     stats[stats[,"mz"] %in% round(sapply(rdisop_res,attr,"M0"),4),3] <- sapply(rdisop_res,nrow)
     
     if (!is.null(correct_peak) && local_check==0 && length(grep(fml, rdisop_res[[length(rdisop_res)]][,1]))!=1) local_check <- 2
@@ -443,7 +483,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     # restrict to plausible formulas
     if (!sf_db) {
       # if a predetermined database is used there is no need to check formula plausibility again
-      rdisop_res <- lapply(rdisop_res, function(x) { x[sapply(x[,"Formula"], PlausibleFormula, ruleset=ionization),] })
+      rdisop_res <- lapply(rdisop_res, function(x) { x[sapply(x[,"Formula"], PlausibleFormula, ruleset=param$ionization),] })
       rdisop_res <- RemoveEmptyFragments(rdisop_res, silent=silent, step="PlausibleFormula")
       stats[stats[,"mz"] %in% round(sapply(rdisop_res,attr,"M0"),4),4] <- sapply(rdisop_res,nrow)
     } else {
@@ -459,7 +499,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
     nl_vec <- sapply(neutral_losses[,"Formula"], function(x) { neutral_losses[neutral_losses[,"Formula"]==x,"Mass"] })
     if (length(rdisop_res)>=2) {
       for (k in 1:length(nl_vec)) {
-        rdisop_res <- RestrictByTypicalLosses(rdisop_res=rdisop_res, tl=nl_vec[k], neutral_loss_cutoff=neutral_loss_cutoff, punish=0.5, substitutions=substitutions)
+        rdisop_res <- RestrictByTypicalLosses(rdisop_res=rdisop_res, tl=nl_vec[k], neutral_loss_cutoff=param$neutral_loss_cutoff, punish=0.5, substitutions=param$substitutions)
         if (!is.null(correct_peak) && local_check==0 && length(grep(fml, rdisop_res[[length(rdisop_res)]][,1]))!=1) {
           local_check <- 4
           #print(paste(names(nl_vec)[k], "caused a problem."))
@@ -477,11 +517,11 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
       # obtain most likely combination
       #rdisop_res <<- rdisop_res
       #browser()
-      rdisop_res_list <- ScoreFormulaCombination(rdisop_res, nl_vec=nl_vec, punish_invalid=0.5, punish_S=0.2, punish_nonplausible=0.5, return_rank=NA, neutral_loss_cutoff=neutral_loss_cutoff, substitutions=substitutions, silent=silent)
+      rdisop_res_list <- ScoreFormulaCombination(rdisop_res, nl_vec=nl_vec, punish_invalid=0.5, punish_S=0.2, punish_nonplausible=0.5, return_rank=NA, neutral_loss_cutoff=param$neutral_loss_cutoff, substitutions=param$substitutions, silent=silent)
       time_elapse <- c(time_elapse, Sys.time())
       
       # plot annotated spectrum
-      if (!silent) GenerateMainOutput(rdisop_res_list, stats, met_db)
+      if (!silent) GenerateMainOutput(rdisop_res_list, stats, met_db, isomain)
       time_elapse <- c(time_elapse, Sys.time())
       
       # write potential error source to global
@@ -491,7 +531,7 @@ function(spec=NULL, precursor=NULL, correct_peak=NULL, met_db=NULL, typical_loss
         print(global_err)
       }
       
-      time_elapse <- round(diff(time_elapse),4); names(time_elapse) <- c("Rdisop","ScoreFilt","Plausible","NeutralLoss","PathEval","Plot")
+      time_elapse <- round(diff(time_elapse),4); names(time_elapse) <- c("FormulaGen","ScoreFilt","Plausible","NeutralLoss","PathEval","Plot")
       if (!silent) {
         cat("\n\nTime elapsed during individual processing steps...\n")
         print(time_elapse)

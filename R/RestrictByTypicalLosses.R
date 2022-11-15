@@ -1,23 +1,19 @@
-#'@title RestrictByTypicalLosses.
+#' @title RestrictByTypicalLosses.
 #'
-#'@description
-#'\code{RestrictByTypicalLosses} will remove all formulas from a group which are inconsistent with an observed typical loss.
+#' @description \code{RestrictByTypicalLosses} will remove all formulas from a group which are inconsistent with an observed typical loss.
 #'
-#'@details
-#'Not exported.
+#' @details Not exported.
 #'
-#'@param rdisop_res Internal result structure of InterpretMSSpectrum.
-#'@param tl Typical loss, a mass with the according sum formula as name.
-#'@param neutral_loss_cutoff Cutoff in mDa for accepting an internal mass difference as a given neutral loss.
-#'@param punish If NULL remove fragments, if numeric 0..1 don't remove but punish the score.
-#'@param substitutions Potential substitutions like H/Na in ESI mode, provided as two column matrix.
+#' @param rdisop_res Internal result structure of InterpretMSSpectrum.
+#' @param tl Typical loss, a mass with the according sum formula as name.
+#' @param neutral_loss_cutoff Cutoff in mDa for accepting an internal mass difference as a given neutral loss.
+#' @param punish If NULL remove fragments, if numeric 0..1 don't remove but punish the score.
+#' @param substitutions Potential substitutions like H/Na in ESI mode, provided as two column matrix.
 #'
-#'@return
-#'Modified rdisop_res.
+#' @return Modified 'rdisop_res' object.
 #'
-#'@import enviPat
-#'
-#'@keywords internal
+#' @keywords internal
+#' @noRd
 #'
 RestrictByTypicalLosses <- function(rdisop_res=NULL, tl=NULL, neutral_loss_cutoff=0.5, punish=0.1, substitutions=NULL) {
   for (i in 1:(length(rdisop_res)-1)) {

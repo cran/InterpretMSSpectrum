@@ -9,7 +9,7 @@
 #'The following elements will be counted and tested: c("C","H","N","O","P","S","Si").
 #'
 #'@param x A chemical formula. No validity checks are performed.
-#'@param ruleset Currently either "GCMS" or "LCMS" as a keyword. In future potentially a link to a texfile containing the ruleset.
+#'@param ruleset Currently either "GCMS" or "LCMS" as a keyword. In future potentially a link to a text file containing the rule set.
 #'
 #'@return
 #'Either TRUE or FALSE. Use sapply(vector, PlausibleFormula) if necessary.

@@ -15,8 +15,8 @@
 #'@param neutral_loss_cutoff Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list.
 #'@param substitutions May provide a two column table of potential substitutions (for adducts in ESI-MS).
 #'@param ionization Either APCI or ESI (important for main peak determination).
-#'@param xlim To specify xlim explicitely (for comparative plotting).
-#'@param ylim To specify ylim explicitely (for comparative plotting).
+#'@param xlim To specify xlim explicitly (for comparative plotting).
+#'@param ylim To specify ylim explicitly (for comparative plotting).
 #'
 #'@return
 #'An annotated plot of the mass spectrum.
