@@ -40,8 +40,9 @@ list is returned.}
 \item{dppm}{Specifies ppm error for Rdisop formula calculation.}
 
 \item{param}{Either a list of parameters or a character shortcut indicating a predefined 
-set. Currently 'APCIpos', 'ESIpos' and 'ESIneg' are supported as shortcuts and can be 
-loaded with i.e. data(APCIpos).}
+set. Currently 'APCIpos', 'ESIpos' and 'ESIneg' are supported as shortcuts. If a list
+is provided, list elements will overwrite similar named entries from the list that
+can be acessed using utils::data(param.default, package = "InterpretMSSpectrum").}
 
 \item{formula_db}{A pre calculated database of sum formulas and their isotopic fine 
 structures can be used to extremely speed up the function.}

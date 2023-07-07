@@ -31,8 +31,9 @@
 #'     list is returned.
 #' @param dppm Specifies ppm error for Rdisop formula calculation.
 #' @param param Either a list of parameters or a character shortcut indicating a predefined 
-#'     set. Currently 'APCIpos', 'ESIpos' and 'ESIneg' are supported as shortcuts and can be 
-#'     loaded with i.e. data(APCIpos).
+#'     set. Currently 'APCIpos', 'ESIpos' and 'ESIneg' are supported as shortcuts. If a list
+#'     is provided, list elements will overwrite similar named entries from the list that
+#'     can be acessed using utils::data(param.default, package = "InterpretMSSpectrum").
 #' @param formula_db A pre calculated database of sum formulas and their isotopic fine 
 #'     structures can be used to extremely speed up the function.
 #'
@@ -63,11 +64,7 @@
 #'
 #' @export
 #'
-#' @importFrom Rdisop decomposeIsotopes decomposeMass initializeElements
 #' @importFrom enviPat check_chemform mergeform
-#' @importFrom graphics mtext
-#' @importFrom grDevices grey
-#' @importFrom utils data read.table
 
 InterpretMSSpectrum <- function(
   spec=NULL, 
@@ -80,12 +77,18 @@ InterpretMSSpectrum <- function(
   param="APCIpos", 
   formula_db=NULL
 ) {
+  
+  # check for Rdisop to be able to keep it in suggested packages
+  if (!requireNamespace("Rdisop", quietly = TRUE)) {
+    message("\nThe use of this function requires package 'Rdisop'.\nPlease install with 'BiocManager::install(\"Rdisop\")\'\n")
+    return(NULL)
+  }
 
   # POTENTIAL PARAMETERS that could be allowed for the user to modify
   # !!! carefull limiting (to maximum of 5 peaks) is experimental
   max_isomain_peaks <- 5
   
-  stopifnot(is.list(param) | param %in% c("APCIpos","ESIpos","ESIneg"))
+  stopifnot(is.list(param) | param %in% c("APCIpos","ESIpos","ESIneg","default"))
 
   # param.default <- list("ionization"="ESI",
   #                       "ionmode"="positive",
@@ -95,8 +98,9 @@ InterpretMSSpectrum <- function(
   #                       "substitutions"=data.frame("s1"=c("H1","H1","Na1","Na1","K1"),"s2"=c("Na1","K1","K1","H1","H1")),
   #                       "quick_isos"=TRUE,
   #                       "score_cutoff"=0.5,
-  #                       "neutral_loss_cutoff"=2)
-  # save(param.default, file = "Data/param.default.RData", compress = "gzip")
+  #                       "neutral_loss_cutoff"=2,
+  #                       "ruleset"="none")
+  # save(param.default, file = "Data/param.default.rda", compress = "gzip")
 
   # load default parameters
   # using a parameter set is an attempt to summarize a number of parameters useful for either GC-APCI or LC-ESI
@@ -115,11 +119,13 @@ InterpretMSSpectrum <- function(
       param.default["substitutions"] <- list(NULL)
       param.default$"neutral_loss_cutoff" <- 0.5
       param.default$"quick_isos" <- FALSE
+      param.default$"ruleset" <- "APCI"
     }
     if (substr(param,1,3)=="ESI") {
       param.default$"allowed_elements" <- c("C","H","N","O","P","S","Cl")
       param.default$"maxElements" <- "P4S4"
       param.default$"substitutions" <- data.frame("s1"=c("H1","H1","Na1"),"s2"=c("Na1","K1","K1"))
+      param.default$"ruleset" <- "ESI"
     }
     if (substr(param,nchar(param)-2,nchar(param))=="pos") {
       param.default$"ionmode" <- "positive"
@@ -230,8 +236,8 @@ InterpretMSSpectrum <- function(
     spec <- gsub("\t"," ",spec) # replace Tabs
     if (length(grep("[^[:digit:],/. ]", spec[1]))==1) spec <- spec[-1] # strip header if present
     spec <- gsub(",",".",spec) # replace Colons
-    spec <- gsub(" +$","",spec) # replace white space end
-    spec <- gsub("^ +","",spec) # replace white space end
+    spec <- gsub(" +$","",spec) # trim white space end
+    spec <- gsub("^ +","",spec) # trim white space start
     spec <- t(as.matrix(sapply(spec, function(x) { as.numeric(strsplit(x," ")[[1]]) }))) # convert to numeric matrix
     if (ncol(spec)>=3) spec <- spec[,-1]
     return(spec)
@@ -254,7 +260,7 @@ InterpretMSSpectrum <- function(
     # we need to correct our observed fragment data with the mass of an electron (charge) being +/- 0.00055 depending on positive/negative mode
     em <- 0.00055
     frag[1,] <- frag[1,]+ifelse(param$ionmode=="positive",1,-1)*em
-    #browser()
+    #if (round(frag[1,1])==364) browser()
     if (sf_db) {
       # data base approach --> much faster compared to default solution below
       dmz <- 0.0005+frag[1,1]*dppm/10^6
@@ -266,7 +272,9 @@ InterpretMSSpectrum <- function(
         miss_iso <- is.na(out[,"m0"])
         if (any(miss_iso)) {
           #browser()
-          out[miss_iso,4:11] <- plyr::ldply(out[miss_iso,"Formula"], function(fml){matrix(t(GetIsotopeDistribution(fml=fml, res=30000, n=3, ele_vec=param$allowed_elements)),nrow=1)})
+          out[miss_iso,4:11] <- plyr::ldply(out[miss_iso,"Formula"], function(fml) { 
+            matrix(t(GetIsotopeDistribution(fml=fml, res=30000, n=3, ele_vec = param$allowed_elements)), nrow=1) 
+          })
           #sf_db[mcand[miss_iso],4:11] <<- out[miss_iso,4:11]
         }
         # we predetermined 3 isotopes so we can compare at max 3 even if we find more within our spectrum...
@@ -380,7 +388,6 @@ InterpretMSSpectrum <- function(
     # check resulting candidate list against a DB for best matche
     if (!is.null(met_db)) {
       met_db[,"Formula"] <- enviPat::check_chemform(isotopes=param$isotopes, met_db[,"Formula"])[,"new_formula"]
-      #M0 <- Rdisop::subMolecules(rdisop_res_best[MH,"Formula"], "H")$formula
       M0 <- enviPat::subform(rdisop_res_best[MH,"Formula"], "H1")
       if (any(met_db$Formula %in% M0)) {
         if (!silent) print(met_db[met_db$Formula %in% M0,])
@@ -417,7 +424,6 @@ InterpretMSSpectrum <- function(
         if (fcor[,1]) {
           warning("[InterpretMSSpectrum] Probably a wrong specification of 'correct_peak'", call. = FALSE)
         } else {
-          #fcor <- Rdisop::addMolecules(fcor[,2], "H")$formula
           fcor <- enviPat::mergeform(fcor[,2], "H1")
         }
         # [Modification:if correct peak is specified but smaller than the 'observed' M0 the now uncommented line leads to trouble]
@@ -438,7 +444,7 @@ InterpretMSSpectrum <- function(
   # check  if spectrum is okay
   if (!nrow(spec)>=1) {
     
-    #[ToDo] FurtherChecks may be usefull
+    #[ToDo] Further checks may be useful
     warning("[InterpretMSSpectrum] Spectra does not contain any information (nrow=0).", call. = FALSE)
     invisible(NULL)
     
@@ -483,7 +489,7 @@ InterpretMSSpectrum <- function(
     # restrict to plausible formulas
     if (!sf_db) {
       # if a predetermined database is used there is no need to check formula plausibility again
-      rdisop_res <- lapply(rdisop_res, function(x) { x[sapply(x[,"Formula"], PlausibleFormula, ruleset=param$ionization),] })
+      rdisop_res <- lapply(rdisop_res, function(x) { x[sapply(x[,"Formula"], PlausibleFormula, ruleset=param$ruleset),] })
       rdisop_res <- RemoveEmptyFragments(rdisop_res, silent=silent, step="PlausibleFormula")
       stats[stats[,"mz"] %in% round(sapply(rdisop_res,attr,"M0"),4),4] <- sapply(rdisop_res,nrow)
     } else {

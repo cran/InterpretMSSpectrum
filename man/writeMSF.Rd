@@ -37,7 +37,7 @@ writeMSF(x, ...)
 
 \item{ms1spec}{(Optional) MS1 spectrum.}
 
-\item{retentiontime}{(Optional) retention time of the spectrum that will be used by MSFINDER for refined prediction.}
+\item{retentiontime}{(Optional) retention time of the spectrum that will be used by MSFinder for refined prediction.}
 
 \item{outfile}{Name of MAT file, or \code{NULL} for 'stdout'.}
 
@@ -46,7 +46,7 @@ writeMSF(x, ...)
 \item{ms2spec}{If available you may provide the according MS2 spectrum}
 }
 \value{
-Write spectrum to MAT file for evaluation in MSFINDER.
+Write spectrum to MAT file for evaluation in MSFinder
 }
 \description{
 Write a spectrum file in MSFinder format.

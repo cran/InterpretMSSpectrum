@@ -47,16 +47,12 @@
 #'# simulate a Sodium adduct to the spectrum (and annotate using substitutions)
 #'p <- which.max(s[,2])
 #'s <- rbind(s, c(21.98194+s[p,1], 0.6*s[p,2]))
-#'PlotSpec(x=s, substitutions=matrix(c("H1","Na1"),ncol=2,byrow=TRUE))
+#'PlotSpec(x=s, substitutions=matrix(c("H","Na"),ncol=2,byrow=TRUE))
 #'
 #'#load ESI test data and apply function
 #'utils::data(esi_spectrum)
 #'PlotSpec(x=esi_spectrum, ionization="ESI")
 
-#'@importFrom graphics axis box lines par plot text
-#'@importFrom grDevices grey
-#'@importFrom utils data
-#'
 #'@export
 
 PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, txt=NULL, mz_prec=4, ionization=NULL, neutral_losses=NULL, neutral_loss_cutoff=NULL, substitutions=NULL, xlim=NULL, ylim=NULL) {
@@ -100,7 +96,13 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
 
     # attach substitution information to neutral loss table
     if (!is.null(substitutions)) {
-      substitutions <- data.frame("Name"=apply(substitutions,1,paste,collapse="/"), "Formula"=rep("",nrow(substitutions)), "Mass"=apply(substitutions,1,function(x){abs(Rdisop::getMolecule(x[1])$exactmass-Rdisop::getMolecule(x[2])$exactmass)}))
+      substitutions <- data.frame(
+        "Name" = apply(substitutions, 1, paste, collapse="/"), 
+        "Formula" = rep("", nrow(substitutions)), 
+        "Mass" = apply(substitutions, 1, function(x) {
+          abs(diff(get_exactmass(x)))
+        })
+      )
       if (!exists("neutral_losses",envir = environment())) {
         neutral_losses <- substitutions
       } else {
@@ -117,7 +119,6 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
 
     # set up main plot
     graphics::par("mar"=c(2,2,0.5,0)+0.5)
-    #browser()
     if (is.null(xlim)) {
       xlim <- c(floor(min(x[xf,1])), ceiling(max(x[xf,1])))
       if (diff(xlim)<30) xlim <- xlim + c(-1,1)*ceiling((30-diff(xlim))/2)
@@ -134,10 +135,8 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
     if (prod(dim(neutral_losses))>1) {
       # determine the main peaks of all isotopic clusters
       isomain <- which(x[xf,1] %in% DetermineIsomainPeaks(spec=x[xf,1:2,drop=F], int_cutoff=0.03, ionization=ifelse(is.null(ionization),"APCI",ionization), limit=max_isomain_peaks))
-
       # get distance matrix for isomain peaks and annotate typical losses
       dmz <- sapply(x[xf,1][isomain], function(y) {y-x[xf,1][isomain]})
-      #browser()
       for (i in 1:nrow(neutral_losses)) {
         l <- which(abs(dmz[upper.tri(dmz)]-neutral_losses[i,3])<=(neutral_loss_cutoff/1000))
         if (length(l)>0) {
@@ -167,7 +166,7 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
   } else {
 
     plot(1, 1, axes=F, ann=F, type="n")
-    text(x=1, y=1, "No valid Spectra format...")
+    graphics::text(x=1, y=1, "No valid Spectra format...")
 
   }
 

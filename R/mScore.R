@@ -23,7 +23,8 @@
 #'
 #'@examples
 #'# get theoretical isotopic pattern of Glucose
-#'glc <- Rdisop::getMolecule("C6H12O6")$isotopes[[1]][,1:3]
+#'glc <- c(180.063388, 0.920845, 181.066845, 0.065214, 182.068041, 0.013043)
+#'glc <- matrix(glc, nrow=2)
 #'mScore(obs=glc, the=glc)
 #'# modify pattern by maximum allowable error (2ppm mass error, 2% int error)
 #'glc_theoretic <- glc

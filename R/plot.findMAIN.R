@@ -29,11 +29,12 @@ plot.findMAIN <-
       InterpretMSSpectrum::PlotSpec(x = x[[idx[i]]], cutoff = 0, cols = cols, txt = x[[idx[i]]][,c("mz","label")], ...)
       graphics::legend("topright", legend = paste(colnames(attr(x[[idx[i]]], "scores")), round(as.numeric(attr(x[[idx[i]]], "scores")), 2)), bty = "n", cex = 0.75, text.col = legend_text_col[, i])
       mhyp <- attr(x[[idx[i]]], "scores")[, "neutral_mass"]
+      #browser()
       color <- if (!is.null(correct_mass)) {
         if (abs(mhyp - correct_mass) < 0.01) 3 else 2
       } else {
         1
       }
-      mtext(sprintf("[%d] %.4f", idx[i], round(mhyp, 4)), col = color)
+      graphics::mtext(sprintf("[%d] %.4f", idx[i], round(mhyp, 4)), col = color)
     }
   }

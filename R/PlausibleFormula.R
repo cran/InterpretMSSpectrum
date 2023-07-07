@@ -22,7 +22,8 @@
 #'
 #'@keywords internal
 
-PlausibleFormula <- function(x, ruleset=c("APCI","ESI")[1]) {
+PlausibleFormula <- function(x, ruleset=c("APCI","ESI","none")) {
+  ruleset <- match.arg(ruleset)
   if (ruleset=="APCI") {
     if (length(x)==1 && is.character(x)) {
       out_name <- x

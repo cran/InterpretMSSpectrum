@@ -80,7 +80,7 @@ PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt")
 # simulate a Sodium adduct to the spectrum (and annotate using substitutions)
 p <- which.max(s[,2])
 s <- rbind(s, c(21.98194+s[p,1], 0.6*s[p,2]))
-PlotSpec(x=s, substitutions=matrix(c("H1","Na1"),ncol=2,byrow=TRUE))
+PlotSpec(x=s, substitutions=matrix(c("H","Na"),ncol=2,byrow=TRUE))
 
 #load ESI test data and apply function
 utils::data(esi_spectrum)

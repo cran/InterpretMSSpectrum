@@ -4,7 +4,7 @@
 \alias{PlausibleFormula}
 \title{PlausibleFormula.}
 \usage{
-PlausibleFormula(x, ruleset = c("APCI", "ESI")[1])
+PlausibleFormula(x, ruleset = c("APCI", "ESI", "none"))
 }
 \arguments{
 \item{x}{A chemical formula. No validity checks are performed.}

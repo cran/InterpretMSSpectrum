@@ -14,7 +14,7 @@
 #' @param ... Arguments passed to method writeMSF.findMAIN.
 #'
 #' @return
-#' Write spectrum to MAT file for evaluation in MSFINDER.
+#' Write spectrum to MAT file for evaluation in MSFinder
 #' 
 #' @rdname writeMSF
 #' @export
@@ -29,7 +29,7 @@ writeMSF <- function(x, ...) {
 #' @param name Give the spectrum a name
 #' @param ionmode "Positive" or "Negative"
 #' @param ms1spec (Optional) MS1 spectrum. 
-#' @param retentiontime (Optional) retention time of the spectrum that will be used by MSFINDER for refined prediction.
+#' @param retentiontime (Optional) retention time of the spectrum that will be used by MSFinder for refined prediction.
 #' @param outfile Name of MAT file, or \code{NULL} for 'stdout'.
 #'
 #' @rdname writeMSF

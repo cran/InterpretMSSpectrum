@@ -30,9 +30,6 @@ RestrictByTypicalLosses <- function(rdisop_res=NULL, tl=NULL, neutral_loss_cutof
       if (any(ind[,"k"])) {
         ind[,"f"] <- F
         for (k in which(ind[,"k"])) {
-          # Rdisop version causes memory overflow and was substituted by enviPat version
-          #if (Rdisop::subMolecules(jfm[ind[k,"j"]], names(tl))$formula == ifm[ind[k,"i"]]) ind[k,"f"] <- TRUE
-          #if (enviPat::subform(jfm[ind[k,"j"]], names(tl)) == ifm[ind[k,"i"]]) ind[k,"f"] <- TRUE
           ind[k,"f"] <- is.subformula(f_sub=ifm[ind[k,"i"]], f_main=jfm[ind[k,"j"]], substitutions=substitutions)
         }
         # filter for correct sumformula combinations if present

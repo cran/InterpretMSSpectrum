@@ -11,6 +11,12 @@
 #'
 #' @return
 #' An annotated spectrum.
+#' 
+#' @examples
+#' spec <- structure(list(mz = c(372.1894, 372.6907, 373.1931, 373.3963), intensity = c(100, 40, 8, 2)), class = "data.frame", row.names = c(NA, -4L))
+#' findiso(spec)
+#' findiso(spec, mzabs=0.003)
+#' spec <- structure(list(mz = c(372.1894, 372.6907, 373.1931, 373.6948), intensity = c(100, 40, 8, 2)), class = "data.frame", row.names = c(NA, -4L))
 #'
 #' @keywords internal
 #' @noRd
@@ -38,24 +44,25 @@ findiso <- function(spec=NULL, mzabs=0.001, intthr=0.03, CAMERAlike=TRUE) {
   ## extract isotope groups by mass gap search
   isomain <- split(s, GetGroupFactor(round(s[,1]), gap=1.1))
   ## limit relative to base peak
-  isomain <- isomain[sapply(isomain,function(x){any(x[,2]>(intthr*max(s[,2])))})]
+  isomain <- isomain[sapply(isomain, function(x) { any(x[,2]>(intthr*max(s[,2]))) })]
   ## check multiple loading and annotate main peaks
   for (i in 1:length(isomain)) {
     x <- isomain[[i]]
     x <- x[ x[,2] > max(x[,2])/1000, , drop=FALSE]
     if (nrow(x)>=2) {
-      for (l in rev(1:3)) {
-        filt <- sapply(x[,1], function(y) { any(abs(x[,1]-y-1.003355/l)<0.01 | abs(x[,1]-y+1.003355/l)<0.01) })
+      # check for multiple charging
+      for (charge in rev(1:3)) {
+        filt <- sapply(x[,1], function(y) { any(abs(x[,1]-y-1.003355/charge)<0.01 | abs(x[,1]-y+1.003355/charge)<0.01) })
         if (any(filt)) {
           m <- x[filt,,drop=FALSE]
           ## keep only those with relation to biggest peak
           mmax <- which.max(m[,2])
-          m <- m[sapply(m[,1], function(y) { any(abs(m[mmax,1]-y-seq(-5,5)*1.003355/l)<0.01) }),]
+          m <- m[sapply(m[,1], function(y) { any(abs(m[mmax,1]-y-seq(-5,5)*1.003355/charge)<0.01) }),]
           m0 <- mainmz(x=m)
           ## restrict to determined main and its isotopes
-          n <- max(round(m[,"mz"]-m0))
-          m <- m[sapply(m0+(0:n)*(1.003355/l), function(mz) { which.min(abs(m[,"mz"]-mz))}),]
-          s[s[,1]==m0,"type"] <- paste0(c("M","D","T")[l],nrow(m)-1)
+          n <- max(round(charge*(m[,"mz"]-m0)))
+          m <- m[sapply(m0+(0:n)*(1.003355/charge), function(mz) { which.min(abs(m[,"mz"]-mz))}),]
+          s[s[,1]==m0,"type"] <- paste0(c("M","D","T")[charge],nrow(m)-1)
           x <- x[!filt | 1:nrow(x)%in%max(which(filt)),,drop=FALSE]
         }
       }

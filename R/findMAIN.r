@@ -12,16 +12,27 @@
 #'     at determining the main adduct ion and its type (protonated, sodiated etc.) of a spectrum, 
 #'     allowing subsequent database searches e.g. using MS-FINDER, SIRIUS or similar.
 #'
-#' @param spec A mass spectrum. Either a matrix or data frame, the first two columns of which are assumed to contain the 'mz' and 'intensity' values, respectively.
-#' @param adductmz Manually specified peak for which \code{adducthyp} should be tested, or 'NULL' (default), to test all main peaks. What is a main peak, is governed by \code{mainpkthr}.
+#' @param spec A mass spectrum. Either a matrix or data frame, the first two columns of which 
+#'     are assumed to contain the 'mz' and 'intensity' values, respectively.
+#' @param adductmz Manually specified peak for which \code{adducthyp} should be tested, 
+#'     or 'NULL' (default), to test all main peaks. What is a main peak, is governed by 
+#'     \code{mainpkthr}.
 #' @param ionmode Ionization mode, either "positive" or "negative". Can be abbreviated.
-#' @param adducthyp Adduct hypotheses to test for each main peak. Defaults to \code{c("[M+H]+","[M+Na]+","[M+K]+")} for positive mode and \code{c("[M-H]-","[M+Cl]-","[M+HCOOH-H]-")}.
-#' @param ms2spec Second spectrum limiting main peak selection. If available, MS^E or bbCID spectra may allow further exclusion of false positive adduct ions, as ions of the intact molecule (protonated molecule, adduct ions) should have lower intensity in the high-energy trace than in low-energy trace.
-#' @param rules Adduct/fragment relationships to test, e.g. \code{c("[M+Na]+", "[M+H-H2O]+")}, or 'NULL' for default set (see \code{\link{Adducts}})
+#' @param adducthyp Adduct hypotheses to test for each main peak. Defaults to 
+#'     \code{c("[M+H]+","[M+Na]+","[M+K]+")} for positive mode and 
+#'     \code{c("[M-H]-","[M+Cl]-","[M+HCOOH-H]-")} for negative mode.
+#' @param ms2spec Second spectrum limiting main peak selection. If available, MS^E or bbCID 
+#'     spectra may allow further exclusion of false positive adduct ions, as ions of the intact 
+#'     molecule (protonated molecule, adduct ions) should have lower intensity in the high-energy 
+#'     trace than in low-energy trace.
+#' @param rules Adduct/fragment relationships to test, e.g. \code{c("[M+Na]+", "[M+H-H2O]+")}, 
+#'     or 'NULL' for default set (see \code{\link{Adducts}})
 #' @param mzabs Allowed mass error, absolute (Da).
 #' @param ppm Allowed mass error, relative (ppm), which is _added_ to 'mzabs'.
 #' @param mainpkthr Intensity threshold for main peak selection, relative to base peak.
-#' @param collapseResults If a neutral mass hypothesis was found more than once (due to multiple adducts suggesting the same neutral mass), return only the one with the highest adduct peak. Should normally kept at \code{TRUE}, the default.
+#' @param collapseResults If a neutral mass hypothesis was found more than once (due to multiple 
+#'     adducts suggesting the same neutral mass), return only the one with the highest adduct peak. 
+#'     Should normally kept at \code{TRUE}, the default.
 #'
 #' @return A list-like 'findMAIN' object for which 'print', 'summary' and 'plot' methods are available.
 #' 
@@ -30,10 +41,34 @@
 #' @examples
 #' \donttest{
 #' utils::data(esi_spectrum, package = "InterpretMSSpectrum")
-#' fmr <- findMAIN(esi_spectrum)
+#' fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum)
 #' plot(fmr)
 #' head(summary(fmr))
 #' InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
+#' fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum[6:9,], adducthyp = "[M+H]+")
+#' plot(fmr)
+#' 
+#' # set up a spectrum containing a double charged peak
+#' spec <- data.frame(mz = c(372.1894, 372.6907, 373.1931, 380), int = c(100, 40, 8, 2))
+#' InterpretMSSpectrum:::findiso(spec)
+#' # allow a double charged adduct hypothesis (not standard)
+#' fmr <- InterpretMSSpectrum::findMAIN(spec, adducthyp = c("[M+H]+", "[M+2H]2+"))
+#' summary(fmr)
+#' plot(fmr, rank = 1)
+#' plot(fmr, rank = 2)
+#' 
+#' # add the correct M+H to this spectrum as a minor peak
+#' spec <- rbind(spec, c(742.3648+1.007, 10))
+#' (fmr <- InterpretMSSpectrum::findMAIN(spec, adducthyp = c("[M+H]+", "[M+2H]2+")))
+#' summary(fmr)
+#' plot(fmr, rank = 1)
+#' plot(fmr, rank = 2)
+#' 
+#' # compare specific hypotheses manually
+#' # get correct result
+#' InterpretMSSpectrum::findMAIN(spec, adductmz = 743.3718, adducthyp = "[M+H]+")
+#' # enforce wrong result
+#' InterpretMSSpectrum::findMAIN(spec, adductmz = 743.3718, adducthyp = "[M+2H]2+")
 #' }
 #'
 #' @export
@@ -77,16 +112,9 @@ findMAIN <- function(
     s <- s[!duplicated(s[, 1]), , drop = FALSE]
     s[, 2][is.na(s[, 2]) | s[, 2] < 0] <- 0
     ## s[,2] <- s[,2] / max(s[,2]) * 100
-    if (any(is.na(match(
-      c("isogr", "iso", "charge"), colnames(s)
-    )))) {
+    if (any(is.na(match(c("isogr", "iso", "charge"), colnames(s))))) {
       ## get isotope annotation if not available
-      s <- findiso(
-        s,
-        mzabs = mzabs,
-        intthr = 0.03,
-        CAMERAlike = TRUE
-      )
+      s <- findiso(s, mzabs = mzabs, intthr = 0.03, CAMERAlike = TRUE)
     }
     return(s)
   }
@@ -169,25 +197,19 @@ findMAIN <- function(
     }
     return(rules.found)
   }
-  findMatchingRules <- function(s, prec, adducthyp = NULL, ruleset, mzabs, ppm) {
+  findMatchingRules <- function(s, mz_test, dmz_adduct = NULL, rules, mzabs, ppm) {
     rules.found <- vector("numeric", nrow(s))
-    neutral_mass <-
-      if (is.null(adducthyp)) {
-        prec
-      } else {
-        prec - adducthyp
-      }
-    expectedPeaks <-
-      predictPeaksFromRuleset(neutral_mass, ruleset)
+    # [JL] to account for "[Mx]2+" hypotheses we need to adjust the expectedPeaks calculation for this double charge
+    # [JL] 2 lines modified on 20230622; set fac=1 to revert this change
+    fac <- ifelse(names(dmz_adduct) %in% rules[,"name"], rules[rules[,"name"]==names(dmz_adduct),"charge"], 1)
+    neutral_mass <- ifelse(is.null(dmz_adduct), mz_test, fac * mz_test - dmz_adduct)
+    expectedPeaks <- predictPeaksFromRuleset(neutral_mass, rules)
+    # cbind(rules, expectedPeaks)
     test.idx <- which(is.na(s[, "iso"]) | s[, "iso"] == 0)
     prec.idx <- NULL
-    if (!is.null(adducthyp)) {
-      prec.idx <- nummatch(prec, s[, 1], mzabs + ppm * prec / 1e6,
-        min.only =
-          T
-      )
-      prec.idx.extended <-
-        nummatch(prec, s[, 1], mzabs + ppm * prec / 1e6, min.only = F)
+    if (!is.null(dmz_adduct)) {
+      prec.idx <- nummatch(mz_test, s[, 1], mzabs + ppm * mz_test / 1e6, min.only = T)
+      prec.idx.extended <- nummatch(mz_test, s[, 1], mzabs + ppm * mz_test / 1e6, min.only = F)
       if (is.numeric(prec.idx.extended)) {
         test.idx <- test.idx[!test.idx %in% prec.idx.extended]
       }
@@ -195,28 +217,18 @@ findMAIN <- function(
     test.mz <- vector("numeric", length = nrow(s))
     test.mz[test.idx] <- s[, 1][test.idx]
     rules.found <- lapply(expectedPeaks, function(x) {
-      nummatch(x,
-        table = test.mz,
-        mzabs + ppm * x / 1e6,
-        min.only = F
-      )
+      nummatch(x, table = test.mz, mzabs + ppm * x / 1e6, min.only = F)
     })
-    rules.found <- resolveConflicts(s, ruleset, rules.found)
+    rules.found <- resolveConflicts(s, rules, rules.found)
     rules.found <- unlist(rules.found) # now unique
     r.idx <- which(!is.na(rules.found))
-    ## exclude.r.idx <- r.idx[nummatch(adducthyp, ruleset[,4][r.idx], 0.001, F)]
+    ## exclude.r.idx <- r.idx[nummatch(dmz_adduct, rules[,4][r.idx], 0.001, F)]
     ## if(is.numeric(exclude.r.idx)) r.idx <- r.idx[-exclude.r.idx]
     pk.idx <- rules.found[r.idx]
     dmz <- abs(s[pk.idx, , drop = F][, 1] - expectedPeaks[r.idx])
     return(list(r.idx, pk.idx, dmz, prec.idx))
   }
-  scoreMatchingRules <- function(
-    s,
-    ruleset,
-    matchingRules,
-    maxExplainedAdducts,
-    maxExplainedIntensity
-  ) {
+  scoreMatchingRules <- function(s, ruleset, matchingRules, maxExplainedAdducts, maxExplainedIntensity, adduct_hyp_charge = 1) {
     out <- matrix(NA, ncol = 7, nrow = 0)
     colnames(out) <- c(
       "adducts_explained",
@@ -255,7 +267,10 @@ findMAIN <- function(
     s.deiso <- s[is.na(s[, 4]) | s[, 4] == 0, ]
     pk.idx <- c(matchingRules[[2]], matchingRules[[4]])
     r.idx <- matchingRules[[1]]
-    dmz <- c(matchingRules[[3]], if (is.null(matchingRules[[4]])) NULL else NA)
+    # [JL] 2 lines modified on 20230622
+    #dmz <- c(matchingRules[[3]], if (is.null(matchingRules[[4]])) NULL else NA)
+    dmz <- matchingRules[[3]]
+    if (!is.null(matchingRules[[4]])) dmz <- c(dmz, NA)
     adducts_explained <- length(c(matchingRules[[2]], matchingRules[[4]]))
     ## ppm score
     ppmVals <- dmz / s[pk.idx, , drop = F][, 1] * 1e6
@@ -266,7 +281,11 @@ findMAIN <- function(
     ppmVals1[is.na(ppmVals1)] <- (minppm / max(minppm * 2, ppm / 2))^e2
     ## charge score
     isoCharge <- s[, 5][pk.idx]
-    ruleCharge <- c(ruleset[r.idx, ][, 3], if (is.null(matchingRules[[4]])) NULL else 1)
+    # [JL] 2 lines modified on 20230622
+    #ruleCharge <- c(ruleset[r.idx, ][, 3], if (is.null(matchingRules[[4]])) NULL else 1)
+    ruleCharge <- ruleset[r.idx, ][, 3]
+    # [JL] for a double charged molecule as prec we need to set the default value respectively
+    if (!is.null(matchingRules[[4]])) ruleCharge <- c(ruleCharge, adduct_hyp_charge)
     isNA <- is.na(isoCharge)
     isoChargeVals <- rep(isoNeutral, length(pk.idx))
     isoChargeVals[!isNA & isoCharge == ruleCharge] <- 1
@@ -322,13 +341,13 @@ findMAIN <- function(
     s.out[pk.idx, ][, "adduct"] <- adductname
     s.out[pk.idx, ][, "ppm"] <- ppm
     s.out[, "label"] <- s.out[, "adduct"]
-    scores.out <-
-      cbind(
-        adductmz = adductmz,
-        adducthyp = adducthyp,
-        neutral_mass = adductmz - adducthyp,
-        scores
-      )
+    fac <- ifelse(names(adducthyp) %in% rules[,"name"], rules[rules[,"name"]==names(adducthyp),"charge"], 1)
+    scores.out <- cbind(
+      adductmz = adductmz,
+      adducthyp = adducthyp,
+      neutral_mass = fac * adductmz - adducthyp,
+      scores
+    )
     attr(s.out, "scores") <- scores.out
     s.out
   }
@@ -338,36 +357,33 @@ findMAIN <- function(
     sum(s[, 2][isAdduct] / sum(s.deiso[, 2]))
   }
   collapseResultSet <- function(ResultSet) {
-    if (length(ResultSet) < 2) {
-      return(ResultSet)
-    }
+    if (length(ResultSet) < 2) { return(ResultSet) }
     rs <- ResultSet
-    x <-
-      data.frame(matrix(
-        ncol = ncol(attr(rs[[1]], "scores")),
-        nrow = length(rs)
-      ))
-    colnames(x) <- colnames(attr(rs[[1]], "scores"))
+    x <- data.frame(matrix(
+      ncol = ncol(attr(rs[[1]], "scores")),
+      nrow = length(rs),
+      dimnames=list(NULL, colnames(attr(rs[[1]], "scores")))
+    ))
     for (i in 1:length(rs)) {
       x[i, ] <- attr(rs[[i]], "scores")
+      #x[i, "adducthyp"] <- rownames(attr(rs[[i]], "scores"))
     }
     x[, "idx"] <- 1:nrow(x)
     mztab <- rs[[1]][, 1]
     inttab <- rs[[1]][, 2]
-    x[, "int"] <-
-      inttab[sapply(x[, "adductmz"], function(mz) {
-        nummatch(mz, mztab, 0.0001)
-      })]
-    x[, "nm_grp"] <-
-      stats::cutree(stats::hclust(stats::dist(x[, "neutral_mass"])), h = 0.015)
+    x[, "int"] <- inttab[sapply(x[, "adductmz"], function(mz) {
+      nummatch(mz, mztab, 0.0001)
+    })]
+    x[, "nm_grp"] <- stats::cutree(stats::hclust(stats::dist(x[, "neutral_mass"])), h = 0.015)
     cs <- tapply(x[, "total_score"], x[, "nm_grp"], max)
     x[, "cs"] <- cs[match(x[, "nm_grp"], names(cs))]
     x <- x[rev(order(x[, "cs"], x[, "int"])), ]
     x <- x[!duplicated(x[, "nm_grp"]), ]
     x[, "total_score"] <- x[, "cs"]
     for (i in 1:nrow(x)) {
-      attr(rs[[x[i, "idx"]]], "scores") <-
-        x[i, 1:ncol(attr(rs[[1]], "scores"))]
+      keep_rn <- rownames(attr(rs[[x[i, "idx"]]], "scores"))
+      attr(rs[[x[i, "idx"]]], "scores") <- x[i, 1:ncol(attr(rs[[1]], "scores"))]
+      rownames(attr(rs[[x[i, "idx"]]], "scores")) <- keep_rn
     }
     idx.good <- x[, "idx"]
     return(rs[idx.good])
@@ -375,7 +391,7 @@ findMAIN <- function(
   ##
   ## main
   ##
-  s <- s.in <- spec
+  s <- spec
   if (nrow(s) == 0 || sum(s[, 2]) == 0) {
     warning("spectrum without peaks")
     return(NULL)
@@ -391,15 +407,12 @@ findMAIN <- function(
       negative = c("[M-H]-", "[M+Cl]-", "[M+HCOOH-H]-")
     )
   }
-  adducthyp <-
-    unlist(sapply(adducthyp, getRuleFromIonSymbol)[4, ])
+  # [JL] ensure that 'adducthyp' becomes a named vector independent on the number of hypoteses (failed for n=1)
+  adducthyp <- getRuleFromIonSymbol(adducthyp)
+  adducthyp <- stats::setNames(object = adducthyp[,"massdiff"], nm = adducthyp[,"name"])
   if (nrow(s) == 1) {
     ## return something useful for spectra with only one line
-    warning(sprintf(
-      "single-line spectrum - wild guessing %s",
-      round(adducthyp[1]),
-      4
-    ))
+    warning(sprintf("single-line spectrum - wild guessing %s", round(adducthyp[1]), 4))
     s.out <- data.frame(
       s[, 1:5, drop = FALSE],
       adduct = NA,
@@ -408,10 +421,11 @@ findMAIN <- function(
       label = NA
     )
     score <- scoreMatchingRules(NULL)
+    fac <- unname(sapply(names(adducthyp), function(x) { generateRules(x)[,"charge"] }))
     attr(s.out, "scores") <- data.frame(
       adductmz = s[, 1],
       adducthyp = adducthyp[1],
-      neutral_mass = s[, 1] - adducthyp[1],
+      neutral_mass = fac[1] * s[, 1] - adducthyp[1],
       score
     )
     out <- list(s.out)
@@ -440,10 +454,10 @@ findMAIN <- function(
   }
   matchingRules <- lapply(1:nrow(prectab), function(i) {
     findMatchingRules(
-      s,
-      prectab[i, 1],
-      prectab[i, 2],
-      rules,
+      s = s, 
+      mz_test = prectab[i, 1], 
+      dmz_adduct = prectab[i, 2], 
+      rules = rules,
       mzabs = mzabs,
       ppm = ppm
     )
@@ -456,14 +470,12 @@ findMAIN <- function(
       rules,
       matchingRules[[i]],
       maxExplainedAdducts,
-      maxExplainedIntensity
+      maxExplainedIntensity,
+      adduct_hyp_charge = rules[rules["name"]==names(prectab[i, 2]),"charge"]
     )
   })
   out <- lapply(1:length(matchingRules), function(i) {
-    formatResults(
-      s, matchingRules[[i]], rules,
-      prectab[i, ][, 1], prectab[i, ][, 2], scores[[i]]
-    )
+    formatResults(s, matchingRules[[i]], rules, prectab[i, ][, 1], prectab[i, ][, 2], scores[[i]])
   })
   if (collapseResults) {
     out <- collapseResultSet(out)

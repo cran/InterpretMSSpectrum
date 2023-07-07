@@ -29,8 +29,7 @@
 #'   utils::data(esi_spectrum, package = "InterpretMSSpectrum")
 #'   InterpretMSSpectrum:::DetermineIsomainPeaks(spec=esi_spectrum, ionization="ESI")
 #' }
-DetermineIsomainPeaks <-
-function(spec=NULL, int_cutoff=0.03, dmz_cutoff=0.001, precursor=NULL, ionization=NULL, ionmode="positive", limit=NULL) {
+DetermineIsomainPeaks <- function(spec=NULL, int_cutoff=0.03, dmz_cutoff=0.001, precursor=NULL, ionization=NULL, ionmode="positive", limit=NULL) {
   
   if (ionization=="ESI") {
     # analyze spectrum
@@ -40,11 +39,11 @@ function(spec=NULL, int_cutoff=0.03, dmz_cutoff=0.001, precursor=NULL, ionizatio
     if (any(isomain[,"iso"]>=1,na.rm=T)) isomain <- isomain[-which(isomain[,"iso"]>=1),]
     # if no precursor is set, try to guess it from data
     if (is.null(precursor)) {
-      tmp <- InterpretMSSpectrum::findMAIN(spec=spec, ionmode = ionmode)
-      tmps <- summary(tmp)[1,,drop=FALSE]
-      precursor <- tmps[,"adductmz"]
-      attr(spec,"pot_mh") <- precursor-tmps[,"adducthyp"]+1.0073
-      attr(spec,"adducthyp") <- tmps[,"adducthyp"]
+      fmr <- summary(InterpretMSSpectrum::findMAIN(spec=spec, ionmode = ionmode))[1,,drop=FALSE]
+      precursor <- fmr[,"adductmz"]
+      adducthyp <- getRuleFromIonSymbol(fmr[,"adducthyp"])[1,4]
+      attr(spec,"pot_mh") <- precursor-adducthyp+1.0073
+      attr(spec,"adducthyp") <- adducthyp
       # exclude masses higher than mass which is closest to precursor (i.e. function is a bit fuzzy)
       MpH_pos <- which.min(abs(isomain[,"mz"]-attr(spec,"pot_mh")))
       prec_pos <- which.min(abs(isomain[,"mz"]-precursor))

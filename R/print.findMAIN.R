@@ -2,16 +2,11 @@
 print.findMAIN <- function (x, ...)
   {
     nres <- length(x)
-    i = 1
+    i <- 1
     scores <- summary(x)
-    scores1 <- attr(x[[i]], "scores")
-    nprec <- length(unique(sapply(x, function(x)
-      attr(x, "scores")[,
-                        "adductmz"])))
-    nadduct <-
-      length(unique(sapply(x, function(x)
-        attr(x, "scores")[,
-                          "adducthyp"])))
+    scores_i <- attr(x[[i]], "scores")
+    nprec <- length(unique(sapply(x, function(x) attr(x, "scores")[,"adductmz"])))
+    nadduct <- length(unique(sapply(x, function(x) attr(x, "scores")[,"adducthyp"])))
     message(
       sprintf(
         "Analyzed %d neutral mass hypotheses (%d peaks * %d adducts), kept %d",
@@ -23,11 +18,11 @@ print.findMAIN <- function (x, ...)
     )
     message(
       sprintf(
-        "Selected %.4f as [M%+.2f], neutral %.4f, score %.2f",
-        scores1[, 1],
-        scores1[, 2],
-        scores1[, 3],
-        scores1[, 10]
+        "Selected m/z=%.4f as %s adduct of neutral mass %.4f with score %.2f.",
+        scores_i[, 1],
+        rownames(scores_i)[1],
+        scores_i[, 3],
+        scores_i[, 10]
       )
     )
     print(x[[i]])

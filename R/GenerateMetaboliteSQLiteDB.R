@@ -1,7 +1,7 @@
 #' @title GenerateMetaboliteSQLiteDB.
 #'
 #' @description \code{GenerateMetaboliteSQLiteDB} will set up a SQLite data base containing
-#'    potential metabolite formulas, #' their masses and isotopic distribution for use with
+#'    potential metabolite formulas, their masses and isotopic distribution for use with
 #'    \link{InterpretMSSpectrum}.
 #'
 #' @details The process takes a long time for larger masses (>400 Da). Parallel processing
@@ -20,14 +20,20 @@
 #'    provides a valid path and file name.
 #'
 #' @examples
-#' # this would be relatively fast, but for higher masses it is getting much slower
+#' # using the default values will compute be relatively fast, but for higher masses it 
+#' # is getting much slower
 #' db <- GenerateMetaboliteSQLiteDB(dbfile = NULL)
-#'
-#' @importFrom Rdisop initializeElements decomposeMass
 #'
 #' @export
 #'
 GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("APCI","ESI")[1], mass_range=c(100,105), ncores=1, silent = TRUE) {
+  
+  # check for Rdisop to be able to keep it in suggested packages
+  if (!requireNamespace("Rdisop", quietly = TRUE)) {
+    message("\nThe use of this function requires package 'Rdisop'.\nPlease install with 'BiocManager::install(\"Rdisop\")\'\n")
+    return(NULL)
+  }
+  
   if (ionization=="ESI") {
     allowed_elements <- c("C","H","N","O","P","S","Cl")
     maxElements="P4S4Cl2"

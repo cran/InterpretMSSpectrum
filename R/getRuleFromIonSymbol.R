@@ -18,12 +18,12 @@
 #' 
 getRuleFromIonSymbol <- function(ions="[M+H]+") {
     checkSymbol <- function(ion) {
-        regexpr("\\[[0-9]{0,2}M.*\\][0-9]{0,2}[\\+\\-]{1,2}", ion) != -1
+      regexpr("\\[[0-9]{0,2}M.*\\][0-9]{0,2}[\\+\\-]{1,2}", ion) != -1
     }
-    shortCuts <- cbind(c("M+H","M+Na","M+K","M+NH4", "M+", "M",
-                         "M-H","M+Cl-", "M-"),
-                       c("[M+H]+", "[M+Na]+", "[M+K]+", "[M+NH4]+", "[M]+", "[M]+",
-                         "[M-H]-","[M+Cl]-", "[M]-"))
+    shortCuts <- cbind(
+      c("M+H", "M+Na", "M+K", "M+NH4", "M+", "M", "M-H","M+Cl-", "M-"),
+      c("[M+H]+", "[M+Na]+", "[M+K]+", "[M+NH4]+", "[M]+", "[M]+", "[M-H]-","[M+Cl]-", "[M]-")
+    )
     em <- 0.0005485799
     chemical_elements <- NULL
     utils::data(chemical_elements, envir=environment(), package="InterpretMSSpectrum")

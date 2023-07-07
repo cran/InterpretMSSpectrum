@@ -30,7 +30,7 @@ Returns the resulting data frame invisible. Will write an SQL_DB if 'dbfile'
 }
 \description{
 \code{GenerateMetaboliteSQLiteDB} will set up a SQLite data base containing
-   potential metabolite formulas, #' their masses and isotopic distribution for use with
+   potential metabolite formulas, their masses and isotopic distribution for use with
    \link{InterpretMSSpectrum}.
 }
 \details{
@@ -40,7 +40,8 @@ The process takes a long time for larger masses (>400 Da). Parallel processing
    ESI does take approximately 5 minutes on 8 cores.
 }
 \examples{
-# this would be relatively fast, but for higher masses it is getting much slower
+# using the default values will compute be relatively fast, but for higher masses it 
+# is getting much slower
 db <- GenerateMetaboliteSQLiteDB(dbfile = NULL)
 
 }

@@ -18,17 +18,26 @@ findMAIN(
 )
 }
 \arguments{
-\item{spec}{A mass spectrum. Either a matrix or data frame, the first two columns of which are assumed to contain the 'mz' and 'intensity' values, respectively.}
+\item{spec}{A mass spectrum. Either a matrix or data frame, the first two columns of which 
+are assumed to contain the 'mz' and 'intensity' values, respectively.}
 
-\item{adductmz}{Manually specified peak for which \code{adducthyp} should be tested, or 'NULL' (default), to test all main peaks. What is a main peak, is governed by \code{mainpkthr}.}
+\item{adductmz}{Manually specified peak for which \code{adducthyp} should be tested, 
+or 'NULL' (default), to test all main peaks. What is a main peak, is governed by 
+\code{mainpkthr}.}
 
 \item{ionmode}{Ionization mode, either "positive" or "negative". Can be abbreviated.}
 
-\item{adducthyp}{Adduct hypotheses to test for each main peak. Defaults to \code{c("[M+H]+","[M+Na]+","[M+K]+")} for positive mode and \code{c("[M-H]-","[M+Cl]-","[M+HCOOH-H]-")}.}
+\item{adducthyp}{Adduct hypotheses to test for each main peak. Defaults to 
+\code{c("[M+H]+","[M+Na]+","[M+K]+")} for positive mode and 
+\code{c("[M-H]-","[M+Cl]-","[M+HCOOH-H]-")} for negative mode.}
 
-\item{ms2spec}{Second spectrum limiting main peak selection. If available, MS^E or bbCID spectra may allow further exclusion of false positive adduct ions, as ions of the intact molecule (protonated molecule, adduct ions) should have lower intensity in the high-energy trace than in low-energy trace.}
+\item{ms2spec}{Second spectrum limiting main peak selection. If available, MS^E or bbCID 
+spectra may allow further exclusion of false positive adduct ions, as ions of the intact 
+molecule (protonated molecule, adduct ions) should have lower intensity in the high-energy 
+trace than in low-energy trace.}
 
-\item{rules}{Adduct/fragment relationships to test, e.g. \code{c("[M+Na]+", "[M+H-H2O]+")}, or 'NULL' for default set (see \code{\link{Adducts}})}
+\item{rules}{Adduct/fragment relationships to test, e.g. \code{c("[M+Na]+", "[M+H-H2O]+")}, 
+or 'NULL' for default set (see \code{\link{Adducts}})}
 
 \item{mzabs}{Allowed mass error, absolute (Da).}
 
@@ -36,7 +45,9 @@ findMAIN(
 
 \item{mainpkthr}{Intensity threshold for main peak selection, relative to base peak.}
 
-\item{collapseResults}{If a neutral mass hypothesis was found more than once (due to multiple adducts suggesting the same neutral mass), return only the one with the highest adduct peak. Should normally kept at \code{TRUE}, the default.}
+\item{collapseResults}{If a neutral mass hypothesis was found more than once (due to multiple 
+adducts suggesting the same neutral mass), return only the one with the highest adduct peak. 
+Should normally kept at \code{TRUE}, the default.}
 }
 \value{
 A list-like 'findMAIN' object for which 'print', 'summary' and 'plot' methods are available.
@@ -56,10 +67,34 @@ Electrospray ionization (ESI) mass spectra frequently contain a number of differ
 \examples{
 \donttest{
 utils::data(esi_spectrum, package = "InterpretMSSpectrum")
-fmr <- findMAIN(esi_spectrum)
+fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum)
 plot(fmr)
 head(summary(fmr))
 InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
+fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum[6:9,], adducthyp = "[M+H]+")
+plot(fmr)
+
+# set up a spectrum containing a double charged peak
+spec <- data.frame(mz = c(372.1894, 372.6907, 373.1931, 380), int = c(100, 40, 8, 2))
+InterpretMSSpectrum:::findiso(spec)
+# allow a double charged adduct hypothesis (not standard)
+fmr <- InterpretMSSpectrum::findMAIN(spec, adducthyp = c("[M+H]+", "[M+2H]2+"))
+summary(fmr)
+plot(fmr, rank = 1)
+plot(fmr, rank = 2)
+
+# add the correct M+H to this spectrum as a minor peak
+spec <- rbind(spec, c(742.3648+1.007, 10))
+(fmr <- InterpretMSSpectrum::findMAIN(spec, adducthyp = c("[M+H]+", "[M+2H]2+")))
+summary(fmr)
+plot(fmr, rank = 1)
+plot(fmr, rank = 2)
+
+# compare specific hypotheses manually
+# get correct result
+InterpretMSSpectrum::findMAIN(spec, adductmz = 743.3718, adducthyp = "[M+H]+")
+# enforce wrong result
+InterpretMSSpectrum::findMAIN(spec, adductmz = 743.3718, adducthyp = "[M+2H]2+")
 }
 
 }

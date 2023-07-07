@@ -28,7 +28,7 @@ Default parameter list for \code{InterpretMSSpectrum}.
 Default parameter list used by \code{\link{InterpretMSSpectrum}}, serving also as a template 
     for custom lists. Basically every option which needs to be modified rarely went in here. Specific 
     parameter set modifications (i.e. for 'APCIpos') are provided and can be called using the character 
-    string as a shortcut. Alternatively, a named list can be provided where all contained paramters 
+    string as a shortcut. Alternatively, a named list can be provided where all contained parameters 
     will receive the new specified values.
 }
 \keyword{datasets}
