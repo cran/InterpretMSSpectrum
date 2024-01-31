@@ -10,7 +10,7 @@
 #'     adduct ions, multimers and in-source fragments \code{[M+H]+, [M+Na]+, [2M+H]+, [M+H-H2O]+}, 
 #'     making it difficult to decide on the compound's neutral mass. This functions aims 
 #'     at determining the main adduct ion and its type (protonated, sodiated etc.) of a spectrum, 
-#'     allowing subsequent database searches e.g. using MS-FINDER, SIRIUS or similar.
+#'     allowing subsequent database searches e.g. using MS-FINDER, SIRIUS or similar.     
 #'
 #' @param spec A mass spectrum. Either a matrix or data frame, the first two columns of which 
 #'     are assumed to contain the 'mz' and 'intensity' values, respectively.
@@ -35,6 +35,20 @@
 #'     Should normally kept at \code{TRUE}, the default.
 #'
 #' @return A list-like 'findMAIN' object for which 'print', 'summary' and 'plot' methods are available.
+#'     Each list element represents a potential spectra annotation, ranked according to 
+#'     a combined score. The spectrum is annotated with columns indicating the determined
+#'     isotopic groups (isogr) and their likely charge. Further, information on the potential 
+#'     set of adducts and their ppm error is attached.
+#'     The score aims to integrate all this information using formula S=sum(w_i x s_i).
+#'     In short, we sum up i weighted score components (currently i=4). Currently these
+#'     components are calculated based on the explained intensity (adduct sets which
+#'     annotate a higher amount of the total spectrum intensity are better), the mass error
+#'     (adduct sets with lower mass error are better), the support by isotopic peaks
+#'     (adduct sets with fitting isotopes are better) and the number of adducts (adduct 
+#'     sets with a larger number of adducts are better).
+#'     The individual scores for each adduct set are attached as an attribute to the
+#'     respective list element and can be easily observed by applying the 'summary' or 
+#'     the 'plot' function on the 'findMAIN' object.
 #' 
 #' @references Jaeger C, Meret M, Schmitt CA, Lisec J (2017), <doi:10.1002/rcm.7905>.
 #'
@@ -44,7 +58,7 @@
 #' fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum)
 #' plot(fmr)
 #' head(summary(fmr))
-#' InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
+#' InterpretMSSpectrum::InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
 #' fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum[6:9,], adducthyp = "[M+H]+")
 #' plot(fmr)
 #' 
@@ -54,7 +68,8 @@
 #' # allow a double charged adduct hypothesis (not standard)
 #' fmr <- InterpretMSSpectrum::findMAIN(spec, adducthyp = c("[M+H]+", "[M+2H]2+"))
 #' summary(fmr)
-#' plot(fmr, rank = 1)
+#' attr(fmr[[1]],"scores")
+#' plot(fmr, rank = 1:4)
 #' plot(fmr, rank = 2)
 #' 
 #' # add the correct M+H to this spectrum as a minor peak
@@ -152,10 +167,8 @@ findMAIN <- function(
       negative = Adducts$Negative
     )
     if (is.null(rules)) stop("unknown ionmode")
+    rules <- getRuleFromIonSymbol(rules)
     return(rules)
-  }
-  generateRules <- function(rules) {
-    getRuleFromIonSymbol(rules)
   }
   predictPeaksFromRuleset <- function(neutral_mass, ruleset) {
     r <- ruleset
@@ -199,10 +212,13 @@ findMAIN <- function(
   }
   findMatchingRules <- function(s, mz_test, dmz_adduct = NULL, rules, mzabs, ppm) {
     rules.found <- vector("numeric", nrow(s))
-    # [JL] to account for "[Mx]2+" hypotheses we need to adjust the expectedPeaks calculation for this double charge
-    # [JL] 2 lines modified on 20230622; set fac=1 to revert this change
-    fac <- ifelse(names(dmz_adduct) %in% rules[,"name"], rules[rules[,"name"]==names(dmz_adduct),"charge"], 1)
-    neutral_mass <- ifelse(is.null(dmz_adduct), mz_test, fac * mz_test - dmz_adduct)
+    # [JL]  on 20240126 neutral_mass calculation was put into a dedicated function, making the below modification obsolete
+    # # [JL] to account for "[Mx]2+" hypotheses we need to adjust the neutral mass calculation for this double charge to be correct in finding expectedPeaks 
+    # # [JL] 2 lines modified on 20230622; set fac=1 to revert this change
+    # fac <- ifelse(names(dmz_adduct) %in% rules[,"name"], rules[rules[,"name"]==names(dmz_adduct),"charge"], 1)
+    # neutral_mass <- ifelse(is.null(dmz_adduct), mz_test, fac * mz_test - dmz_adduct)
+    # browser()
+    neutral_mass <- getNeutralMass(m = mz_test, adduct_name = names(dmz_adduct), adduct_rules = rules)
     expectedPeaks <- predictPeaksFromRuleset(neutral_mass, rules)
     # cbind(rules, expectedPeaks)
     test.idx <- which(is.na(s[, "iso"]) | s[, "iso"] == 0)
@@ -283,9 +299,9 @@ findMAIN <- function(
     isoCharge <- s[, 5][pk.idx]
     # [JL] 2 lines modified on 20230622
     #ruleCharge <- c(ruleset[r.idx, ][, 3], if (is.null(matchingRules[[4]])) NULL else 1)
-    ruleCharge <- ruleset[r.idx, ][, 3]
+    ruleCharge <- abs(ruleset[r.idx, ][, 3])
     # [JL] for a double charged molecule as prec we need to set the default value respectively
-    if (!is.null(matchingRules[[4]])) ruleCharge <- c(ruleCharge, adduct_hyp_charge)
+    if (!is.null(matchingRules[[4]])) ruleCharge <- c(ruleCharge, abs(adduct_hyp_charge))
     isNA <- is.na(isoCharge)
     isoChargeVals <- rep(isoNeutral, length(pk.idx))
     isoChargeVals[!isNA & isoCharge == ruleCharge] <- 1
@@ -341,11 +357,13 @@ findMAIN <- function(
     s.out[pk.idx, ][, "adduct"] <- adductname
     s.out[pk.idx, ][, "ppm"] <- ppm
     s.out[, "label"] <- s.out[, "adduct"]
-    fac <- ifelse(names(adducthyp) %in% rules[,"name"], rules[rules[,"name"]==names(adducthyp),"charge"], 1)
+    #fac <- ifelse(names(adducthyp) %in% rules[,"name"], rules[rules[,"name"]==names(adducthyp),"charge"], 1)
+    #browser()
     scores.out <- cbind(
       adductmz = adductmz,
       adducthyp = adducthyp,
-      neutral_mass = fac * adductmz - adducthyp,
+      #neutral_mass = fac * adductmz - adducthyp,
+      neutral_mass = getNeutralMass(m = adductmz, adduct_name = names(adducthyp), adduct_rules = ruleset),
       scores
     )
     attr(s.out, "scores") <- scores.out
@@ -410,6 +428,12 @@ findMAIN <- function(
   # [JL] ensure that 'adducthyp' becomes a named vector independent on the number of hypoteses (failed for n=1)
   adducthyp <- getRuleFromIonSymbol(adducthyp)
   adducthyp <- stats::setNames(object = adducthyp[,"massdiff"], nm = adducthyp[,"name"])
+  # establish rules
+  if (is.null(rules)) {
+    rules <- getDefaultRules(ionmode)
+  } else {
+    rules <- getRuleFromIonSymbol(rules)
+  }
   if (nrow(s) == 1) {
     ## return something useful for spectra with only one line
     warning(sprintf("single-line spectrum - wild guessing %s", round(adducthyp[1]), 4))
@@ -421,11 +445,12 @@ findMAIN <- function(
       label = NA
     )
     score <- scoreMatchingRules(NULL)
-    fac <- unname(sapply(names(adducthyp), function(x) { generateRules(x)[,"charge"] }))
+    #fac <- unname(sapply(names(adducthyp), function(x) { generateRules(x)[,"charge"] }))
     attr(s.out, "scores") <- data.frame(
       adductmz = s[, 1],
-      adducthyp = adducthyp[1],
-      neutral_mass = fac[1] * s[, 1] - adducthyp[1],
+      adducthyp = names(adducthyp)[1],
+      #neutral_mass = fac[1] * s[, 1] - adducthyp[1],
+      neutral_mass = getNeutralMass(m = s[, 1], adduct_name = names(adducthyp)[1], adduct_rules = rules),
       score
     )
     out <- list(s.out)
@@ -435,13 +460,9 @@ findMAIN <- function(
     return(out)
   }
   if (nrow(s) == 2) {
+    ## test only first adducthyp for poor specs
     adducthyp <- adducthyp[1]
   }
-  # test only first adducthyp for poor specs
-  if (is.null(rules)) {
-    rules <- getDefaultRules(ionmode)
-  }
-  rules <- generateRules(rules)
   prec <- adductmz
   if (is.null(prec)) {
     prec <- getMainPeaks(s, intthr = mainpkthr, ms2spec = ms2spec)
@@ -474,6 +495,7 @@ findMAIN <- function(
       adduct_hyp_charge = rules[rules["name"]==names(prectab[i, 2]),"charge"]
     )
   })
+  #browser()
   out <- lapply(1:length(matchingRules), function(i) {
     formatResults(s, matchingRules[[i]], rules, prectab[i, ][, 1], prectab[i, ][, 2], scores[[i]])
   })
@@ -494,4 +516,87 @@ findMAIN <- function(
   attr(out, "rules_tested") <- rules[, 1]
   class(out) <- "findMAIN"
   return(out)
+}
+
+#'@rdname findMAIN
+#'@param x Object of class findMAIN.
+#'@param rank Rank of the suggestion to plot (can be a numeric vector).
+#'@param correct_mass If provided will indicate correct suggestion by green color.
+#'@param ... Further plotting parameters.
+#'@export
+#'@method plot findMAIN
+plot.findMAIN <- function (x, rank = 1, correct_mass = NULL, ...) {
+  if (length(rank) > 1) {
+    opar <- graphics::par(mfrow = grDevices::n2mfrow(length(rank)))
+    graphics::par(mar = c(2, 2, 2, 1))
+    on.exit(graphics::par(opar))
+  }
+  idx <- rank
+  if (any(idx > length(x))) { stop("object shorter than requested numer of ranks") }
+  lidx <- length(idx)
+  legend_text_col <- matrix(1, nrow = ncol(attr(x[[1]], "scores")), ncol = lidx)
+  if (lidx > 1) {
+    sm <- summary(x)[idx, ]
+    legend_text_col[7, which(sm$mass_score == max(sm$mass_score))] <- 3
+    legend_text_col[8, which(sm$int_score == max(sm$int_score))] <- 3
+    legend_text_col[9, which(sm$supp_isos == max(sm$supp_isos))] <- 3
+  }
+  for (i in 1:lidx) {
+    cols <- x[[idx[i]]][,"charge"]
+    cols[is.na(cols)] <- 0
+    cols <- cols+1
+    cols[cols>=3] <- 6
+    cols[!is.na(x[[idx[i]]][,"label"])] <- 4
+    InterpretMSSpectrum::PlotSpec(x = x[[idx[i]]], cutoff = 0, cols = cols, txt = x[[idx[i]]][,c("mz","label")], ...)
+    # browser()
+    # the legend could be established based on he summary result...
+    # leg <- summary(x)[idx[i],]
+    # leg_lab <- colnames(leg)
+    # leg_val <- leg
+    leg_lab <- colnames(attr(x[[idx[i]]], "scores"))
+    #leg_val <- as.character(round(x = as.numeric(attr(x[[idx[i]]], "scores")), digits = c(3, 0, 3, 0, 3, 2, 2, 2, 2, 2)))
+    leg_val <- sapply(1:10, function(j) { formatC(x = as.numeric(attr(x[[idx[i]]], "scores"))[j], digits = c(4, 0, 4, 0, 2, 2, 2, 2, 2, 2)[j], format = "f") })
+    leg_val[2] <- rownames(attr(x[[idx[i]]], "scores"))
+    graphics::legend("topright", legend = paste(leg_lab, leg_val, sep=": "), bty = "n", cex = 0.75, text.col = legend_text_col[, i])
+    mhyp <- attr(x[[idx[i]]], "scores")[, "neutral_mass"]
+    color <- if (!is.null(correct_mass)) {
+      if (abs(mhyp - correct_mass) < 0.01) 3 else 2
+    } else {
+      1
+    }
+    graphics::mtext(sprintf("[%d] %.4f", idx[i], round(mhyp, 4)), col = color, cex = 0.9, line = 0.05)
+  }
+}
+
+#'@rdname findMAIN
+#'@param x Object of class findMAIN.
+#'@param ... Further parameters.
+#'@export
+#'@method print findMAIN
+print.findMAIN <- function (x, ...) {
+  nres <- length(x)
+  i <- 1
+  scores <- summary(x)
+  scores_i <- attr(x[[i]], "scores")
+  nprec <- length(unique(sapply(x, function(x) attr(x, "scores")[,"adductmz"])))
+  nadduct <- length(unique(sapply(x, function(x) attr(x, "scores")[,"adducthyp"])))
+  message(
+    sprintf(
+      "Analyzed %d neutral mass hypotheses (%d peaks * %d adducts), kept %d",
+      nprec * nadduct,
+      nprec,
+      nadduct,
+      nres
+    )
+  )
+  message(
+    sprintf(
+      "Selected m/z=%.4f as %s adduct of neutral mass %.4f with score %.2f.",
+      scores_i[, 1],
+      rownames(scores_i)[1],
+      scores_i[, 3],
+      scores_i[, 10]
+    )
+  )
+  print(x[[i]])
 }

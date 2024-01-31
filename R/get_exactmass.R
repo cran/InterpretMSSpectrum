@@ -9,7 +9,7 @@
 #' @export
 #'   
 #' @examples
-#' InterpretMSSpectrum:::get_exactmass(c("C6H12O6", "Na", "H1"))
+#' InterpretMSSpectrum::get_exactmass(c("C6H12O6", "Na", "H1"))
 #' 
 get_exactmass <- function(x) {
   ce <- InterpretMSSpectrum::chemical_elements

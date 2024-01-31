@@ -16,6 +16,7 @@ PlotSpec(
   neutral_losses = NULL,
   neutral_loss_cutoff = NULL,
   substitutions = NULL,
+  precursor = NULL,
   xlim = NULL,
   ylim = NULL
 )
@@ -25,23 +26,34 @@ PlotSpec(
 
 \item{masslab}{The cutoff value  (relative to basepeak) for text annotation of peaks.}
 
-\item{rellab}{TRUE/FALSE. Label masses relative to largest mass in plot (if TRUE), absolute (if FALSE) or to specified mass (if numeric).}
+\item{rellab}{TRUE/FALSE. Label masses relative to largest mass in plot (if TRUE), 
+absolute (if FALSE) or to specified mass (if numeric).}
 
-\item{cutoff}{Show only peaks with intensity higher than cutoff*I(base peak). This will limit the x-axis accordingly.}
+\item{cutoff}{Show only peaks with intensity higher than cutoff*I(base peak). 
+This will limit the x-axis accordingly.}
 
 \item{cols}{Color vector for peaks with length(cols)==nrow(x).}
 
-\item{txt}{Label peaks with specified text (column 1 specifies x-axis value, column 2 specifies label).}
+\item{txt}{Label peaks with specified text (column 1 specifies x-axis value, 
+column 2 specifies label).}
 
 \item{mz_prec}{Numeric precision of m/z (=number of digits to plot).}
 
 \item{ionization}{Either APCI or ESI (important for main peak determination).}
 
-\item{neutral_losses}{Data frame of defined building blocks (Name, Formula, Mass). If not provided data("neutral_losses") will be used.}
+\item{neutral_losses}{Data frame of defined building blocks (Name, Formula, Mass). 
+If not provided data("neutral_losses") will be used.}
 
-\item{neutral_loss_cutoff}{Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list.}
+\item{neutral_loss_cutoff}{Specifies the allowed deviation in mDa for neutral 
+losses to be accepted from the provided neutral loss list.}
 
-\item{substitutions}{May provide a two column table of potential substitutions (for adducts in ESI-MS).}
+\item{substitutions}{May provide a two column table of potential substitutions 
+(for adducts in ESI-MS).}
+
+\item{precursor}{Internally main peaks will be determined up to a supposed 
+precursor obtained by `DetermineIsomainPeaks` and annotations will only be 
+plotted up to this mass. To plot annotations for the full mass range, set 
+`precursor` to a higher mass.}
 
 \item{xlim}{To specify xlim explicitly (for comparative plotting).}
 
@@ -74,8 +86,11 @@ PlotSpec(x=s, masslab=NULL, neutral_losses=NA)
 tmp <- data.frame("Name"=c("Loss1","Loss2"),"Formula"=c("",""),"Mass"=c(90.05,27.995))
 PlotSpec(x=s, neutral_losses=tmp)
 
-# provide additional color and annotaion information per peak
+# provide additional color and annotation information per peak
 PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt"))
+
+# annotate a sum formula
+PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C[6]~H[12]~O[6]","expr"=TRUE))
 
 # simulate a Sodium adduct to the spectrum (and annotate using substitutions)
 p <- which.max(s[,2])

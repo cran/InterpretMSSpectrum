@@ -34,24 +34,25 @@ DetermineIsomainPeaks <- function(spec=NULL, int_cutoff=0.03, dmz_cutoff=0.001, 
   if (ionization=="ESI") {
     # analyze spectrum
     isomain <- findiso(spec=spec, mzabs=dmz_cutoff, intthr=int_cutoff, CAMERAlike=TRUE)
-    # exclude multiple charged peaks and isotopes
-    if (any(isomain[,"charge"]>=2,na.rm=T)) isomain <- isomain[-which(isomain[,"charge"]>=2),]
-    if (any(isomain[,"iso"]>=1,na.rm=T)) isomain <- isomain[-which(isomain[,"iso"]>=1),]
+    # exclude multiple charged peaks
+    if (any(isomain[,"charge"]>=2,na.rm=T)) isomain <- isomain[-which(isomain[,"charge"]>=2),,drop=FALSE]
+    # exclude isotopic peaks
+    if (any(isomain[,"iso"]>=1,na.rm=T)) isomain <- isomain[-which(isomain[,"iso"]>=1),,drop=FALSE]
     # if no precursor is set, try to guess it from data
     if (is.null(precursor)) {
       fmr <- summary(InterpretMSSpectrum::findMAIN(spec=spec, ionmode = ionmode))[1,,drop=FALSE]
       precursor <- fmr[,"adductmz"]
       adducthyp <- getRuleFromIonSymbol(fmr[,"adducthyp"])[1,4]
-      attr(spec,"pot_mh") <- precursor-adducthyp+1.0073
+      attr(spec,"pot_mh") <- precursor-adducthyp+1.007276
       attr(spec,"adducthyp") <- adducthyp
       # exclude masses higher than mass which is closest to precursor (i.e. function is a bit fuzzy)
       MpH_pos <- which.min(abs(isomain[,"mz"]-attr(spec,"pot_mh")))
       prec_pos <- which.min(abs(isomain[,"mz"]-precursor))
-      flt <- sort(c(which(isomain[,"mz"]<=isomain[MpH_pos,"mz"]),prec_pos))
+      flt <- unique(sort(c(which(isomain[,"mz"]<=isomain[MpH_pos,"mz"]),prec_pos)))
+      #flt <- sort(c(which(isomain[,"mz"]<=isomain[MpH_pos,"mz"]),prec_pos))
     } else {
       flt <- which(isomain[,"mz"]<=isomain[which.min(abs(isomain[,"mz"]-precursor)),"mz"])
     }
-    #browser()
     isomain <- isomain[flt,]
     n <- which(isomain[,"iso"]==0)
     # ensure that precursor is within list
@@ -70,7 +71,7 @@ DetermineIsomainPeaks <- function(spec=NULL, int_cutoff=0.03, dmz_cutoff=0.001, 
     if (length(isomain)>=1) {
       out <- isomain
     } else {
-      #fallback sollution if nothing remained
+      #fallback solution if nothing remained
       out <- spec[which.max(spec[,2]),1]
     }
   }

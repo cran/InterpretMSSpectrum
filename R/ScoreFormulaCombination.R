@@ -14,6 +14,7 @@
 #' @param punish_nonplausible Check for all potential fragments not only if they are a sub formula but if this neutral loss is a plausible formula itself and lower according to
 #' @param return_rank Integer, will return the n-th best combination; if NA will return a ranked list of all found combinations.
 #' @param neutral_loss_cutoff Cutoff in mDa for accepting an internal mass difference as a given neutral loss.
+#' @param substitutions substitutions.
 #' @param silent Print some stats or not.
 
 #' @return

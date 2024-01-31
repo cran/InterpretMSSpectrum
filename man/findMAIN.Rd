@@ -2,6 +2,8 @@
 % Please edit documentation in R/findMAIN.r
 \name{findMAIN}
 \alias{findMAIN}
+\alias{plot.findMAIN}
+\alias{print.findMAIN}
 \title{findMAIN.}
 \usage{
 findMAIN(
@@ -16,6 +18,10 @@ findMAIN(
   mainpkthr = 0.005,
   collapseResults = TRUE
 )
+
+\method{plot}{findMAIN}(x, rank = 1, correct_mass = NULL, ...)
+
+\method{print}{findMAIN}(x, ...)
 }
 \arguments{
 \item{spec}{A mass spectrum. Either a matrix or data frame, the first two columns of which 
@@ -48,9 +54,31 @@ or 'NULL' for default set (see \code{\link{Adducts}})}
 \item{collapseResults}{If a neutral mass hypothesis was found more than once (due to multiple 
 adducts suggesting the same neutral mass), return only the one with the highest adduct peak. 
 Should normally kept at \code{TRUE}, the default.}
+
+\item{x}{Object of class findMAIN.}
+
+\item{rank}{Rank of the suggestion to plot (can be a numeric vector).}
+
+\item{correct_mass}{If provided will indicate correct suggestion by green color.}
+
+\item{...}{Further parameters.}
 }
 \value{
 A list-like 'findMAIN' object for which 'print', 'summary' and 'plot' methods are available.
+    Each list element represents a potential spectra annotation, ranked according to 
+    a combined score. The spectrum is annotated with columns indicating the determined
+    isotopic groups (isogr) and their likely charge. Further, information on the potential 
+    set of adducts and their ppm error is attached.
+    The score aims to integrate all this information using formula S=sum(w_i x s_i).
+    In short, we sum up i weighted score components (currently i=4). Currently these
+    components are calculated based on the explained intensity (adduct sets which
+    annotate a higher amount of the total spectrum intensity are better), the mass error
+    (adduct sets with lower mass error are better), the support by isotopic peaks
+    (adduct sets with fitting isotopes are better) and the number of adducts (adduct 
+    sets with a larger number of adducts are better).
+    The individual scores for each adduct set are attached as an attribute to the
+    respective list element and can be easily observed by applying the 'summary' or 
+    the 'plot' function on the 'findMAIN' object.
 }
 \description{
 \code{findMAIN} will evaluate an ESI spectrum for the potential main adducts, 
@@ -70,7 +98,7 @@ utils::data(esi_spectrum, package = "InterpretMSSpectrum")
 fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum)
 plot(fmr)
 head(summary(fmr))
-InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
+InterpretMSSpectrum::InterpretMSSpectrum(fmr[[1]], precursor=263, param="ESIpos")
 fmr <- InterpretMSSpectrum::findMAIN(esi_spectrum[6:9,], adducthyp = "[M+H]+")
 plot(fmr)
 
@@ -80,7 +108,8 @@ InterpretMSSpectrum:::findiso(spec)
 # allow a double charged adduct hypothesis (not standard)
 fmr <- InterpretMSSpectrum::findMAIN(spec, adducthyp = c("[M+H]+", "[M+2H]2+"))
 summary(fmr)
-plot(fmr, rank = 1)
+attr(fmr[[1]],"scores")
+plot(fmr, rank = 1:4)
 plot(fmr, rank = 2)
 
 # add the correct M+H to this spectrum as a minor peak

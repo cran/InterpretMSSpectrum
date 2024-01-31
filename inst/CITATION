@@ -1,0 +1,43 @@
+bibentry(
+  bibtype = "Manual",
+  other = unlist(citation(auto = meta), recursive = FALSE)
+)
+
+bibentry(
+  bibtype = "Article",
+  textVersion = NULL,
+  header  = NULL,
+  mfooter = "This free open-source software implements academic research by the authors and co-workers. If you use it, please support the project by citing the appropriate journal article.",
+  title   = "Automated Annotation and Evaluation of In-Source Mass Spectra in GC/Atmospheric Pressure Chemical Ionization-MS-Based Metabolomics",
+  author  = c(
+              person("Carsten", "Jaeger"),
+              person("Friederike", "Hoffmann"),
+              person(c("Clemens", "A."), "Schmitt"),
+              person("Jan", "Lisec")
+            ),
+  year    = 2016,
+  journal = "Analytical Chemistry",
+  volume  = 88,
+  issue   = 19,
+  pages   = "9386--9390",
+  doi     = "10.1021/acs.analchem.6b02743"
+)
+
+bibentry(
+  bibtype = "Article",
+  textVersion = NULL,
+  header  = NULL,
+  footer  = NULL,
+  title   = "Compound annotation in liquid chromatography/high-resolution mass spectrometry based metabolomics: robust adduct ion determination as a prerequisite to structure prediction in electrospray ionization mass spectra",
+  author  = c(
+              person("Carsten", "Jaeger"),
+              person("Michaël", "Méret"),
+              person(c("Clemens", "A."), "Schmitt"),
+              person("Jan", "Lisec")
+            ),
+  year    = 2017,
+  journal = "Rapid Commun Mass Spectrom",
+  volume  = 31,
+  pages   = "1261--1266",
+  doi     = "10.1002/rcm.7905"
+)

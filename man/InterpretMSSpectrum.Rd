@@ -17,77 +17,78 @@ InterpretMSSpectrum(
 )
 }
 \arguments{
-\item{spec}{A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum} 
+\item{spec}{A 2-column matrix of mz/int pairs. If spec=NULL then \code{InterpretMSSpectrum}
 tries to read data from clipboard (i.e. two columns copied from an Excel spreadsheet).}
 
-\item{precursor}{The ion (m/z) from spec closest to this mass will be considered as 
-precursor (can be nominal, i.e. if precursor=364 then 364.1234 would be selected from 
+\item{precursor}{The ion (m/z) from spec closest to this mass will be considered as
+precursor (can be nominal, i.e. if precursor=364 then 364.1234 would be selected from
 spectrum if it is closest).}
 
-\item{correct_peak}{For testing purposes. A character in the form of "name, formula, mz" 
+\item{correct_peak}{For testing purposes. A character in the form of "name, formula, mz"
 to evaluate spectra against. Note! Separating character is ', '.}
 
-\item{met_db}{A metabolite DB (e.g. GMD or internal) can be provided to search for 
+\item{met_db}{A metabolite DB (e.g. GMD or internal) can be provided to search for
 candidates comparing M+H ions (cf. Examples).}
 
-\item{typical_losses_definition}{A file name (e.g. D:/BuildingBlocks_GCAPCI.txt) from 
-where to load relevant neutral losses (cf. Details). Alternatively an data frame with 
+\item{typical_losses_definition}{A file name (e.g. D:/BuildingBlocks_GCAPCI.txt) from
+where to load relevant neutral losses (cf. Details). Alternatively an data frame with
 columns 'Name', 'Formula' and 'Mass'.}
 
-\item{silent}{Logical. If TRUE no plot is generated and no output except final candidate 
+\item{silent}{Logical. If TRUE no plot is generated and no output except final candidate
 list is returned.}
 
 \item{dppm}{Specifies ppm error for Rdisop formula calculation.}
 
-\item{param}{Either a list of parameters or a character shortcut indicating a predefined 
+\item{param}{Either a list of parameters or a character shortcut indicating a predefined
 set. Currently 'APCIpos', 'ESIpos' and 'ESIneg' are supported as shortcuts. If a list
 is provided, list elements will overwrite similar named entries from the list that
-can be acessed using utils::data(param.default, package = "InterpretMSSpectrum").}
+can be accessed using utils::data(param.default, package = "InterpretMSSpectrum").}
 
-\item{formula_db}{A pre calculated database of sum formulas and their isotopic fine 
+\item{formula_db}{A pre calculated database of sum formulas and their isotopic fine
 structures can be used to extremely speed up the function.}
 }
 \value{
-An annotated plot of the mass spectrum and detailed information within the 
-    console. Main result, list of final candidate formulas and their putative fragments, 
+An annotated plot of the mass spectrum and detailed information within the
+    console. Main result, list of final candidate formulas and their putative fragments,
     will be returned invisibly.
 }
 \description{
-\code{InterpretMSSpectrum} will read, evaluate and plot a deconvoluted 
-    mass spectrum (mass*intensity pairs) from either TMS-derivatized GC-APCI-MS data 
-    or ESI+/- data. The main purpose is to identify the causal metabolite or more 
-    precisely the sum formula of the molecular peak by annotating and interpreting 
+\code{InterpretMSSpectrum} will read, evaluate and plot a deconvoluted
+    mass spectrum (mass*intensity pairs) from either TMS-derivatized GC-APCI-MS data
+    or ESI+/- data. The main purpose is to identify the causal metabolite or more
+    precisely the sum formula of the molecular peak by annotating and interpreting
     all visible fragments and isotopes.
 }
 \details{
-For further details refer to and if using please cite 
-    Jaeger et al. (2016, <doi:10.1021/acs.analchem.6b02743>) in case of GC-APCI and 
-    Jaeger et al. (2017, <doi:10.1002/rcm.7905>) for ESI data. The Interpretation is 
-    extremely speed up if 'formula_db' (a predetermined database of potential sum 
-    formulas) is provided within the function call. Within the package you may use 
-    \link{GenerateMetaboliteSQLiteDB} to prepare one for yourself or request 
-    a download link from \email{jan.lisec@bam.de} as de-novo calculation for a wide 
+For further details refer to and if using please cite
+    Jaeger et al. (2016, <doi:10.1021/acs.analchem.6b02743>) in case of GC-APCI and
+    Jaeger et al. (2017, <doi:10.1002/rcm.7905>) for ESI data. The Interpretation is
+    extremely speed up if 'formula_db' (a predetermined database of potential sum
+    formulas) is provided within the function call. Within the package you may use
+    \link{GenerateMetaboliteSQLiteDB} to prepare one for yourself or request
+    a download link from \email{jan.lisec@bam.de} as de-novo calculation for a wide
     mass range may take several days.
 }
 \examples{
-# load test data
-utils::data(apci_spectrum)
+# load APCI test data
+apci_spectrum <- InterpretMSSpectrum::apci_spectrum
 
-# provide information of a correct peak (if you know) as a character containing
-# name, formula and ion mass -- separated by ', ' as shown below
+# (otional) provide information of a correct peak as a character containing
+# name, formula and ion mass -- separated by ',' as shown below
 cp <- "Glutamic acid (3TMS), C14H33NO4Si3, 364.1790"
 
-# provide database of known peaks and correct peak
+# (otional) provide a database of known peaks
 mdb <- data.frame(
   "Name" = c("Glutamic acid (3TMS)", "other peak with same sum formula"),
   "Formula" = c("C14H33NO4Si3", "C14H33NO4Si3"),
   "M+H" = c(364.179, 364.179), stringsAsFactors = FALSE, check.names = FALSE
 )
 
-# provide a database of precalculated formulas to speed up the process
+# (otional) provide a database of precalculated formulas to speed up the process
 fdb <- system.file("extdata", "APCI_min.db", package = "InterpretMSSpectrum")
 
-# apply function providing above arguments (dppm is set to 0.5 to reduce run time)
-InterpretMSSpectrum(spec=apci_spectrum, correct_peak=cp, met_db=mdb, formula_db=fdb)
+# apply function providing above arguments which will print to the console
+# and open a new plot
+InterpretMSSpectrum(spec = apci_spectrum, correct_peak = cp, met_db = mdb, formula_db = fdb)
 
 }

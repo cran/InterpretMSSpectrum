@@ -10,7 +10,6 @@ summary.findMAIN <-
     }
     for (i in c(1, 2, 3)) out[, i] <- round(out[, i], 4)
     for (i in c(5, 6, 7, 8, 10))  out[, i] <- round(out[, i], 2)
-    #browser()
     out[,"adducthyp"] <- sapply(object, function(x) {rownames(attr(x, "scores"))[1]})
     return(out)
   }

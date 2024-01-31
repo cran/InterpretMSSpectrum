@@ -6,15 +6,25 @@
 #'
 #'@param x A two-column matrix with ("mz", "int") information.
 #'@param masslab The cutoff value  (relative to basepeak) for text annotation of peaks.
-#'@param rellab TRUE/FALSE. Label masses relative to largest mass in plot (if TRUE), absolute (if FALSE) or to specified mass (if numeric).
-#'@param cutoff Show only peaks with intensity higher than cutoff*I(base peak). This will limit the x-axis accordingly.
+#'@param rellab TRUE/FALSE. Label masses relative to largest mass in plot (if TRUE), 
+#'    absolute (if FALSE) or to specified mass (if numeric).
+#'@param cutoff Show only peaks with intensity higher than cutoff*I(base peak). 
+#'    This will limit the x-axis accordingly.
 #'@param cols Color vector for peaks with length(cols)==nrow(x).
-#'@param txt Label peaks with specified text (column 1 specifies x-axis value, column 2 specifies label).
+#'@param txt Label peaks with specified text (column 1 specifies x-axis value, 
+#'    column 2 specifies label).
 #'@param mz_prec Numeric precision of m/z (=number of digits to plot).
-#'@param neutral_losses Data frame of defined building blocks (Name, Formula, Mass). If not provided data("neutral_losses") will be used.
-#'@param neutral_loss_cutoff Specifies the allowed deviation in mDa for neutral losses to be accepted from the provided neutral loss list.
-#'@param substitutions May provide a two column table of potential substitutions (for adducts in ESI-MS).
+#'@param neutral_losses Data frame of defined building blocks (Name, Formula, Mass). 
+#'    If not provided data("neutral_losses") will be used.
+#'@param neutral_loss_cutoff Specifies the allowed deviation in mDa for neutral 
+#'    losses to be accepted from the provided neutral loss list.
+#'@param substitutions May provide a two column table of potential substitutions 
+#'    (for adducts in ESI-MS).
 #'@param ionization Either APCI or ESI (important for main peak determination).
+#'@param precursor Internally main peaks will be determined up to a supposed 
+#'    precursor obtained by `DetermineIsomainPeaks` and annotations will only be 
+#'    plotted up to this mass. To plot annotations for the full mass range, set 
+#'    `precursor` to a higher mass.
 #'@param xlim To specify xlim explicitly (for comparative plotting).
 #'@param ylim To specify ylim explicitly (for comparative plotting).
 #'
@@ -41,8 +51,11 @@
 #'tmp <- data.frame("Name"=c("Loss1","Loss2"),"Formula"=c("",""),"Mass"=c(90.05,27.995))
 #'PlotSpec(x=s, neutral_losses=tmp)
 #'
-#'# provide additional color and annotaion information per peak
+#'# provide additional color and annotation information per peak
 #'PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt"))
+#'
+#'# annotate a sum formula
+#'PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C[6]~H[12]~O[6]","expr"=TRUE))
 #'
 #'# simulate a Sodium adduct to the spectrum (and annotate using substitutions)
 #'p <- which.max(s[,2])
@@ -55,7 +68,7 @@
 
 #'@export
 
-PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, txt=NULL, mz_prec=4, ionization=NULL, neutral_losses=NULL, neutral_loss_cutoff=NULL, substitutions=NULL, xlim=NULL, ylim=NULL) {
+PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, txt=NULL, mz_prec=4, ionization=NULL, neutral_losses=NULL, neutral_loss_cutoff=NULL, substitutions=NULL, precursor=NULL, xlim=NULL, ylim=NULL) {
   # potential parameters
   max_isomain_peaks <- NULL
 
@@ -77,7 +90,6 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
 
     # load building block definition
     if (is.null(neutral_losses)) {
-      #utils::data(paste("neutral_losses",ionization,sep="_"), envir=environment())
       if (is.null(ionization)) {
         neutral_losses <- NULL
       } else {
@@ -103,11 +115,13 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
           abs(diff(get_exactmass(x)))
         })
       )
-      if (!exists("neutral_losses",envir = environment())) {
+      if (!exists("neutral_losses", envir = environment())) {
         neutral_losses <- substitutions
       } else {
-        neutral_losses <- rbind(neutral_losses[,colnames(substitutions)], substitutions)
+        neutral_losses <- rbind(neutral_losses[, colnames(substitutions)], substitutions)
       }
+      # remove duplicated entries
+      neutral_losses <- neutral_losses[!duplicated(neutral_losses[,"Mass"]),,drop=FALSE]
     }
 
     # define mass range for plotting
@@ -134,7 +148,7 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
     # indicate typical losses
     if (prod(dim(neutral_losses))>1) {
       # determine the main peaks of all isotopic clusters
-      isomain <- which(x[xf,1] %in% DetermineIsomainPeaks(spec=x[xf,1:2,drop=F], int_cutoff=0.03, ionization=ifelse(is.null(ionization),"APCI",ionization), limit=max_isomain_peaks))
+      isomain <- which(x[xf,1] %in% DetermineIsomainPeaks(spec=x[xf,1:2,drop=F], int_cutoff=0.03, ionization=ifelse(is.null(ionization),"APCI",ionization), limit=max_isomain_peaks, precursor = precursor))
       # get distance matrix for isomain peaks and annotate typical losses
       dmz <- sapply(x[xf,1][isomain], function(y) {y-x[xf,1][isomain]})
       for (i in 1:nrow(neutral_losses)) {
@@ -152,7 +166,13 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
     # print text (sum formulas)
     if (!is.null(txt)) {
       tmp.y <- sapply(txt[,1],function(y){x[which.min(abs(x[,1]-y)),2]})
-      graphics::text(x=txt[,1], y=tmp.y, pos=sapply(tmp.y, function(y) {ifelse(y>0.9*max(x[xf,2]),1,3)}), labels=txt[,2], col=4, cex=0.8)
+      if (ncol(txt)>=3 && colnames(txt)[3]=="expr") {
+        for (i in 1:nrow(txt)) {
+          graphics::text(x=txt[i,1], y=tmp.y[i], pos=ifelse(tmp.y[i]>0.9*max(x[xf,2]),1,3), labels=ifelse(txt[i,3], eval(parse(text = paste0("expression(", txt[i,2], ")"))), txt[i,2]), col=4, cex=0.8)
+        }
+      } else {
+        graphics::text(x=txt[,1], y=tmp.y, pos=sapply(tmp.y, function(y) {ifelse(y>0.9*max(x[xf,2]),1,3)}), labels=txt[,2], col=4, cex=0.8)
+      }
     }
 
     # print masses

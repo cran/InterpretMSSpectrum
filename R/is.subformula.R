@@ -9,6 +9,10 @@
 #' @param substitutions data frame of allowed substitutions to consider.
 #'
 #' @return Logical indicating if 'f_sub' is potentially a sub formula of 'f_main'.
+#'     The return vector is named, The names will contain the elements (formula)
+#'     of f_main which are not in f_sub. So for TRUE elements this will be the
+#'     neutral loss. For FALSE elements this will be additionally the elements 
+#'     which are not contained in f_sub.
 #'
 #' @examples
 #' InterpretMSSpectrum:::is.subformula(f_sub = "C6H12O6", f_main = "C6H12O6")

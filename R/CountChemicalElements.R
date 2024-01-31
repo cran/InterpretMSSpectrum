@@ -26,6 +26,7 @@ CountChemicalElements <- function(x = NULL, ele = NULL) {
     # remove all non letter/digit (e.g. further brackets, charges...)
     out <- gsub("[^[:alnum:]]", "", out)
     count <- as.numeric(gsub("[^[:digit:]]", "", out))
+    # set missing nubers to 1 as default
     count[is.na(count)] <- 1
     names(count) <- gsub("[^[:alpha:]]", "", out)
     # sum up in case that elements were found repeatedly

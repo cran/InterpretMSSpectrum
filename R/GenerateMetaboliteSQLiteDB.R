@@ -87,7 +87,7 @@ GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("AP
       if (!is.null(molecules)) {
         out <- data.frame("Formula"=I(molecules$formula), "Valid"=molecules$valid, "Mass"=molecules$exactmass)
         out <- cbind(out, plyr::ldply(molecules$isotopes,function(x){matrix(c(x[1,],x[2,]),nrow=1,dimnames=list(NULL,paste0(rep(c("m","a"),each=4),0:3)))}))
-        out <- out[sapply(out[,"Formula"], InterpretMSSpectrum::PlausibleFormula, ruleset=ionization),,drop=FALSE]
+        out <- out[sapply(out[,"Formula"], PlausibleFormula, ruleset=ionization),,drop=FALSE]
         out[,"Formula"] <- sapply(out[,"Formula"], function(fml) { enviPat::check_chemform(isotopes=isotopes, fml)[,"new_formula"] })
       } else {
         out <- empty_result
@@ -108,7 +108,7 @@ GenerateMetaboliteSQLiteDB <- function(dbfile="SQLite_APCI.db", ionization=c("AP
       if (!is.null(molecules)) {
         out <- data.frame("Formula"=I(molecules$formula), "Valid"=molecules$valid, "Mass"=molecules$exactmass)
         out <- cbind(out, plyr::ldply(molecules$isotopes,function(x){matrix(c(x[1,],x[2,]),nrow=1,dimnames=list(NULL,paste0(rep(c("m","a"),each=4),0:3)))}))
-        out <- out[sapply(out[,"Formula"], InterpretMSSpectrum::PlausibleFormula, ruleset=ionization),,drop=FALSE]
+        out <- out[sapply(out[,"Formula"], PlausibleFormula, ruleset=ionization),,drop=FALSE]
         out[,"Formula"] <- sapply(out[,"Formula"], function(fml) { enviPat::check_chemform(isotopes=isotopes, fml)[,"new_formula"] })
         if (nrow(out)>=1)  res <- rbind(res,out)
         if (length(molecules[[1]])>100000) dmz <- 0.5*dmz
