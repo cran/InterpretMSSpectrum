@@ -1,8 +1,8 @@
 Type: Package
 Package: InterpretMSSpectrum
 Title: Interpreting High Resolution Mass Spectra
-Version: 1.4.5
-Date: 2024-01-31
+Version: 1.5.2
+Date: 2025-12-03
 Authors@R: c(
     person("Jan", "Lisec", , "jan.lisec@bam.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-1220-2286")),
@@ -26,10 +26,10 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2024-01-31 11:57:51 UTC; jlisec
-Author: Jan Lisec [aut, cre] (<https://orcid.org/0000-0003-1220-2286>),
+Packaged: 2025-12-03 11:21:33 UTC; jlisec
+Author: Jan Lisec [aut, cre] (ORCID: <https://orcid.org/0000-0003-1220-2286>),
   Jaeger Carsten [aut]
 Repository: CRAN
-Date/Publication: 2024-01-31 13:10:05 UTC
+Date/Publication: 2025-12-03 13:20:02 UTC

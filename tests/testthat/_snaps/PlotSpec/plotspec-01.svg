@@ -104,4 +104,11 @@
 <text x='677.09' y='384.68' text-anchor='middle' style='font-size: 8.40px; font-family: sans;' textLength='35.04px' lengthAdjust='spacingAndGlyphs'>365.1802</text>
 <text x='680.85' y='465.15' text-anchor='middle' style='font-size: 8.40px; font-family: sans;' textLength='35.04px' lengthAdjust='spacingAndGlyphs'>366.1776</text>
 </g>
+<defs>
+  <clipPath id='cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng=='>
+    <rect x='59.04' y='59.04' width='630.72' height='443.52' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng==)'>
+</g>
 </svg>

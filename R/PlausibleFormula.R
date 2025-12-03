@@ -12,7 +12,8 @@
 #' @return Either TRUE or FALSE. Use sapply(vector, PlausibleFormula) if necessary.#'
 #' @examples
 #' PlausibleFormula(x = "C6H12O6")
-#' PlausibleFormula(x = "C5H13O14P3")#'
+#' PlausibleFormula(x = "C5H13O14P3")
+#' PlausibleFormula(x = "test", ruleset = "none")
 #' @keywords internal
 #' @noRd
 PlausibleFormula <- function(x, ruleset = c("APCI", "ESI", "none")) {
@@ -98,6 +99,10 @@ PlausibleFormula <- function(x, ruleset = c("APCI", "ESI", "none")) {
       out <- NA
       names(out) <- paste(x, collapse = "_", sep = "_")
     }
+  }
+  if (ruleset == "none") {
+    out <- TRUE
+    names(out) <- paste(x, collapse = "_", sep = "_")
   }
   return(out)
 }

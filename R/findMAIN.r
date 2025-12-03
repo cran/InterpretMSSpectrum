@@ -530,6 +530,9 @@ plot.findMAIN <- function (x, rank = 1, correct_mass = NULL, ...) {
     opar <- graphics::par(mfrow = grDevices::n2mfrow(length(rank)))
     graphics::par(mar = c(2, 2, 2, 1))
     on.exit(graphics::par(opar))
+  } else {
+    opar <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(opar))
   }
   idx <- rank
   if (any(idx > length(x))) { stop("object shorter than requested numer of ranks") }
@@ -548,16 +551,12 @@ plot.findMAIN <- function (x, rank = 1, correct_mass = NULL, ...) {
     cols[cols>=3] <- 6
     cols[!is.na(x[[idx[i]]][,"label"])] <- 4
     InterpretMSSpectrum::PlotSpec(x = x[[idx[i]]], cutoff = 0, cols = cols, txt = x[[idx[i]]][,c("mz","label")], ...)
-    # browser()
-    # the legend could be established based on he summary result...
-    # leg <- summary(x)[idx[i],]
-    # leg_lab <- colnames(leg)
-    # leg_val <- leg
     leg_lab <- colnames(attr(x[[idx[i]]], "scores"))
-    #leg_val <- as.character(round(x = as.numeric(attr(x[[idx[i]]], "scores")), digits = c(3, 0, 3, 0, 3, 2, 2, 2, 2, 2)))
     leg_val <- sapply(1:10, function(j) { formatC(x = as.numeric(attr(x[[idx[i]]], "scores"))[j], digits = c(4, 0, 4, 0, 2, 2, 2, 2, 2, 2)[j], format = "f") })
     leg_val[2] <- rownames(attr(x[[idx[i]]], "scores"))
-    graphics::legend("topright", legend = paste(leg_lab, leg_val, sep=": "), bty = "n", cex = 0.75, text.col = legend_text_col[, i])
+    graphics::par("mar"=c(2,2,0.5,0)+0.5)
+    #graphics::legend("topright", legend = paste(leg_lab, leg_val, sep=": "), bty = "n", cex = 0.75, text.col = legend_text_col[, i])
+    graphics::mtext(paste(leg_lab, leg_val, sep=": "), col = legend_text_col[, i], cex = 0.75, line = -0.5-0.78*(1:10), adj = 0.99)
     mhyp <- attr(x[[idx[i]]], "scores")[, "neutral_mass"]
     color <- if (!is.null(correct_mass)) {
       if (abs(mhyp - correct_mass) < 0.01) 3 else 2

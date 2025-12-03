@@ -84,7 +84,7 @@ InterpretMSSpectrum::InterpretMSSpectrum(spec=apci_spectrum)
     #> Time elapsed during individual processing steps...
     #> Time differences in secs
     #>  FormulaGen   ScoreFilt   Plausible NeutralLoss    PathEval        Plot 
-    #>     23.1175      0.0005      0.1097      0.1341      0.3711      0.0541
+    #>     29.8296      0.0005      0.1235      0.1222      0.3729      0.0662
 
 The function can be tweaked with numerous parameters to limit the
 results, speed up calculations and more.
@@ -181,6 +181,6 @@ InterpretMSSpectrum:::is.subformula("H2O", "HCOOH")
 You might read the publications on either [APCI spectra
 processing](https://doi.org/10.1021/acs.analchem.6b02743) which explains
 the idea of using the in source fragments for prediction of potential
-sum formulas or on ESI spectra processing doi.org/10.1002/rcm.7905 which
-explains the strategy to infer the correct precursor of ESI mass
-spectra.
+sum formulas or on [ESI spectra
+processing](https://doi.org/10.1002/rcm.7905) which explains the
+strategy to infer the correct precursor of ESI mass spectra.

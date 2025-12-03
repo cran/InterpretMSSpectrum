@@ -1,6 +1,7 @@
 testthat::test_that(
   desc = "InterpretMSSpectrum works", 
   code = {
+    testthat::skip_on_cran()
     inp <- InterpretMSSpectrum::apci_spectrum
     cp <- "Glutamic acid (3TMS), C14H33NO4Si3, 364.1790"
     mdb <- data.frame(

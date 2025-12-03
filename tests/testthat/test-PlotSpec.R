@@ -1,6 +1,7 @@
 testthat::test_that(
   desc = "PlotSpec plot returns expected result for APCI",
   code = {
+    testthat::skip_on_cran()
     inp <- InterpretMSSpectrum::apci_spectrum
     # avoid creating a Rplots.pdf in testthat folder
     pdf(NULL)
@@ -14,6 +15,7 @@ testthat::test_that(
 testthat::test_that(
   desc = "PlotSpec plot returns expected result for ESI",
   code = {
+    testthat::skip_on_cran()
     inp <- InterpretMSSpectrum::esi_spectrum
     substitutions <- InterpretMSSpectrum::param.default$substitutions
     neutral_losses <- data.frame("Name"="Test", "Formula"="C_X", "Mass"=291.049-263.0534)

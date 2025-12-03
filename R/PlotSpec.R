@@ -12,7 +12,8 @@
 #'    This will limit the x-axis accordingly.
 #'@param cols Color vector for peaks with length(cols)==nrow(x).
 #'@param txt Label peaks with specified text (column 1 specifies x-axis value, 
-#'    column 2 specifies label).
+#'    column 2 specifies label). Labels will be converted to expressions following
+#'    the ruleset to format chemical formulas (see Examples).
 #'@param mz_prec Numeric precision of m/z (=number of digits to plot).
 #'@param neutral_losses Data frame of defined building blocks (Name, Formula, Mass). 
 #'    If not provided data("neutral_losses") will be used.
@@ -55,7 +56,11 @@
 #'PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt"))
 #'
 #'# annotate a sum formula
-#'PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C[6]~H[12]~O[6]","expr"=TRUE))
+#'PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C6H12O6"))
+#'
+#'# or annotate a mix of sum formula and text
+#'txt <- data.frame("x"=s[order(s[,2],decreasing=TRUE)[1:2],1],"txt"=c("C6H12O6", "some text"))
+#'PlotSpec(x=s, txt=txt)
 #'
 #'# simulate a Sodium adduct to the spectrum (and annotate using substitutions)
 #'p <- which.max(s[,2])
@@ -132,6 +137,8 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
     if (is.null(cols)) cols <- rep(1, nrow(x))
 
     # set up main plot
+    opar <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(opar))
     graphics::par("mar"=c(2,2,0.5,0)+0.5)
     if (is.null(xlim)) {
       xlim <- c(floor(min(x[xf,1])), ceiling(max(x[xf,1])))
@@ -157,7 +164,7 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
           l <- cbind(row(dmz)[upper.tri(dmz)][l],col(dmz)[upper.tri(dmz)][l])
           for (j in 1:nrow(l)) {
             graphics::lines(x[xf,][isomain,][l[j,],], lty=2, col=grDevices::grey(0.8))
-            graphics::text(x=mean(x[xf,][isomain,][l[j,],1]), y=mean(x[xf,][isomain,][l[j,],2]), labels=neutral_losses[i,1], col=grDevices::grey(0.8), cex=0.8)
+            graphics::text(x=mean(x[xf,][isomain,][l[j,],1]), y=mean(x[xf,][isomain,][l[j,],2]), labels=neutral_losses[i,1], col=grDevices::grey(0.8), cex=graphics::par("cex")*0.8)
           }
         }
       }
@@ -166,12 +173,10 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
     # print text (sum formulas)
     if (!is.null(txt)) {
       tmp.y <- sapply(txt[,1],function(y){x[which.min(abs(x[,1]-y)),2]})
-      if (ncol(txt)>=3 && colnames(txt)[3]=="expr") {
-        for (i in 1:nrow(txt)) {
-          graphics::text(x=txt[i,1], y=tmp.y[i], pos=ifelse(tmp.y[i]>0.9*max(x[xf,2]),1,3), labels=ifelse(txt[i,3], eval(parse(text = paste0("expression(", txt[i,2], ")"))), txt[i,2]), col=4, cex=0.8)
-        }
+      if (!inherits(try(fml2expr(txt[,2]), silent=TRUE), "try-error")) {
+        for (i in 1:nrow(txt)) graphics::text(x=txt[i,1], y=tmp.y[i], pos=ifelse(tmp.y[i]>0.9*max(x[xf,2]),1,3), labels=fml2expr(txt[i,2]), col=4, cex=graphics::par("cex")*0.8)
       } else {
-        graphics::text(x=txt[,1], y=tmp.y, pos=sapply(tmp.y, function(y) {ifelse(y>0.9*max(x[xf,2]),1,3)}), labels=txt[,2], col=4, cex=0.8)
+        graphics::text(x=txt[,1], y=tmp.y, pos=sapply(tmp.y, function(y) {ifelse(y>0.9*max(x[xf,2]),1,3)}), labels=txt[,2], col=4, cex=graphics::par("cex")*0.8)
       }
     }
 
@@ -180,7 +185,7 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
       xf <- xf & (x[,2] >= masslab*max(x[xf,2]))
       if (length(rellab)==1 && is.numeric(rellab)) tmp.lab <- round(x[xf,1]-rellab, mz_prec)
       if (length(rellab)==1 && is.logical(rellab)) tmp.lab <- round(x[xf,1]-ifelse(rellab, x[xf,1][which.max(x[xf,2])], 0), mz_prec)
-      if (exists("tmp.lab") && length(tmp.lab)==sum(xf)) graphics::text(x=x[xf,1], y=x[xf,2], labels=tmp.lab, cex=0.7)
+      if (exists("tmp.lab") && length(tmp.lab)==sum(xf)) graphics::text(x=x[xf,1], y=x[xf,2], labels=tmp.lab, cex=graphics::par("cex")*0.7)
     }
 
   } else {

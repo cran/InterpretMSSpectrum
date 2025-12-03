@@ -110,18 +110,27 @@
 <text x='421.58' y='474.56' text-anchor='middle' style='font-size: 8.40px; font-family: sans;' textLength='30.37px' lengthAdjust='spacingAndGlyphs'>551.077</text>
 <text x='423.43' y='432.89' text-anchor='middle' style='font-size: 8.40px; font-family: sans;' textLength='35.04px' lengthAdjust='spacingAndGlyphs'>553.0948</text>
 <text x='449.04' y='474.81' text-anchor='middle' style='font-size: 8.40px; font-family: sans;' textLength='35.04px' lengthAdjust='spacingAndGlyphs'>581.0914</text>
-<text x='612.17' y='28.30' style='font-size: 9.00px; font-family: sans;' textLength='81.57px' lengthAdjust='spacingAndGlyphs'>adductmz: 263.0534</text>
-<text x='612.17' y='39.10' style='font-size: 9.00px; font-family: sans;' textLength='76.06px' lengthAdjust='spacingAndGlyphs'>adducthyp: [M+H]+</text>
-<text x='612.17' y='49.90' style='font-size: 9.00px; font-family: sans;' textLength='96.58px' lengthAdjust='spacingAndGlyphs'>neutral_mass: 262.0461</text>
-<text x='612.17' y='60.70' style='font-size: 9.00px; font-family: sans;' textLength='85.08px' lengthAdjust='spacingAndGlyphs'>adducts_explained: 3</text>
-<text x='612.17' y='71.50' style='font-size: 9.00px; font-family: sans;' textLength='57.54px' lengthAdjust='spacingAndGlyphs'>medppm: 0.54</text>
-<text x='612.17' y='82.30' style='font-size: 9.00px; font-family: sans;' textLength='54.54px' lengthAdjust='spacingAndGlyphs'>int_perc: 0.43</text>
-<text x='612.17' y='93.10' style='font-size: 9.00px; font-family: sans;' textLength='71.05px' lengthAdjust='spacingAndGlyphs'>mass_score: 0.92</text>
-<text x='612.17' y='103.90' style='font-size: 9.00px; font-family: sans;' textLength='59.04px' lengthAdjust='spacingAndGlyphs'>int_score: 0.42</text>
-<text x='612.17' y='114.70' style='font-size: 9.00px; font-family: sans;' textLength='63.06px' lengthAdjust='spacingAndGlyphs'>supp_isos: 2.00</text>
-<text x='612.17' y='125.50' style='font-size: 9.00px; font-family: sans;' textLength='66.55px' lengthAdjust='spacingAndGlyphs'>total_score: 0.70</text>
+</g>
+<defs>
+  <clipPath id='cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng=='>
+    <rect x='59.04' y='59.04' width='630.72' height='443.52' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng==)'>
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<text x='684.27' y='29.95' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='81.57px' lengthAdjust='spacingAndGlyphs'>adductmz: 263.0534</text>
+<text x='684.21' y='41.18' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='76.06px' lengthAdjust='spacingAndGlyphs'>adducthyp: [M+H]+</text>
+<text x='684.42' y='52.42' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='96.58px' lengthAdjust='spacingAndGlyphs'>neutral_mass: 262.0461</text>
+<text x='684.30' y='63.65' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='85.08px' lengthAdjust='spacingAndGlyphs'>adducts_explained: 3</text>
+<text x='684.03' y='74.88' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='57.54px' lengthAdjust='spacingAndGlyphs'>medppm: 0.54</text>
+<text x='684.00' y='86.11' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='54.54px' lengthAdjust='spacingAndGlyphs'>int_perc: 0.43</text>
+<text x='684.16' y='97.34' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='71.05px' lengthAdjust='spacingAndGlyphs'>mass_score: 0.92</text>
+<text x='684.04' y='108.58' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='59.04px' lengthAdjust='spacingAndGlyphs'>int_score: 0.42</text>
+<text x='684.08' y='119.81' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='63.06px' lengthAdjust='spacingAndGlyphs'>supp_isos: 2.00</text>
+<text x='684.12' y='131.04' text-anchor='end' style='font-size: 9.00px; font-family: sans;' textLength='66.55px' lengthAdjust='spacingAndGlyphs'>total_score: 0.70</text>
 <text x='374.40' y='10.80' text-anchor='middle' style='font-size: 10.80px; font-family: sans;' textLength='60.06px' lengthAdjust='spacingAndGlyphs'>[1] 262.0461</text>
+</g>
+<g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng==)'>
 </g>
 </svg>

@@ -35,7 +35,8 @@ This will limit the x-axis accordingly.}
 \item{cols}{Color vector for peaks with length(cols)==nrow(x).}
 
 \item{txt}{Label peaks with specified text (column 1 specifies x-axis value, 
-column 2 specifies label).}
+column 2 specifies label). Labels will be converted to expressions following
+the ruleset to format chemical formulas (see Examples).}
 
 \item{mz_prec}{Numeric precision of m/z (=number of digits to plot).}
 
@@ -90,7 +91,11 @@ PlotSpec(x=s, neutral_losses=tmp)
 PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt"))
 
 # annotate a sum formula
-PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C[6]~H[12]~O[6]","expr"=TRUE))
+PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C6H12O6"))
+
+# or annotate a mix of sum formula and text
+txt <- data.frame("x"=s[order(s[,2],decreasing=TRUE)[1:2],1],"txt"=c("C6H12O6", "some text"))
+PlotSpec(x=s, txt=txt)
 
 # simulate a Sodium adduct to the spectrum (and annotate using substitutions)
 p <- which.max(s[,2])

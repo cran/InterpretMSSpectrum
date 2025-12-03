@@ -1,6 +1,7 @@
 testthat::test_that(
   desc = "InterpretTP returns expected result",
   code = {
+    testthat::skip_on_cran()
     # simple calculations
     inp <- InterpretMSSpectrum::apci_spectrum
     out <- InterpretMSSpectrum::InterpretTP(fml = "C14H33NO4Si3", spec=inp, param="APCIpos", silent = TRUE)

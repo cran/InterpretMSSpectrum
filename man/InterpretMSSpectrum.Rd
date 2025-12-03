@@ -91,4 +91,20 @@ fdb <- system.file("extdata", "APCI_min.db", package = "InterpretMSSpectrum")
 # and open a new plot
 InterpretMSSpectrum(spec = apci_spectrum, correct_peak = cp, met_db = mdb, formula_db = fdb)
 
+\dontrun{
+s <- structure(
+list(
+ mz = #'c(112.98609, 197.963, 226.97786, 520.90757, 560.95715, 568.95507, 593.95389), 
+ int = c(100, 100, 100, 100, 100, 100, 100)
+), class = "data.frame", row.names = c(NA, -7L)
+)
+IMSSparam <- InterpretMSSpectrum::param.default
+IMSSparam$ionmode <- "negative"
+IMSSparam$allowed_elements <- c("C", "H", "N", "O", "P", "S", "F")
+#IMSSparam$minElements <- "C1F1"
+IMSSparam$maxElements <- "P1S2"
+IMSSparam["substitutions"] <- list(NULL)
+IMSSparam["ruleset"] <- "ESI"
+InterpretMSSpectrum(spec = s, param = IMSSparam, precursor = spec[nrow(spec),1])
+}
 }
