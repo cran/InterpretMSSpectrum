@@ -18,7 +18,8 @@ PlotSpec(
   substitutions = NULL,
   precursor = NULL,
   xlim = NULL,
-  ylim = NULL
+  ylim = NULL,
+  mar = c(2, 2, 0.5, 0) + 0.5
 )
 }
 \arguments{
@@ -59,6 +60,8 @@ plotted up to this mass. To plot annotations for the full mass range, set
 \item{xlim}{To specify xlim explicitly (for comparative plotting).}
 
 \item{ylim}{To specify ylim explicitly (for comparative plotting).}
+
+\item{mar}{Set to NULL to allow specifying margins outside the function (important for use in Shiny App context with brush event).}
 }
 \value{
 An annotated plot of the mass spectrum.
@@ -68,7 +71,7 @@ An annotated plot of the mass spectrum.
 The main purpose is to visualize the relation between deconvoluted masses.
 }
 \examples{
-#load test data and apply function
+# load APCI test data and apply function
 utils::data(apci_spectrum, package = "InterpretMSSpectrum")
 PlotSpec(x=apci_spectrum, ionization="APCI")
 
@@ -78,13 +81,13 @@ s[,2] <- s[,2]/max(s[,2])
 PlotSpec(x=s)
 
 # use relative labelling
-PlotSpec(x=s, rellab=364.1789)
+PlotSpec(x=s, rellab=s[which.max(s[,2]),1])
 
 # avoid annotation of masses and fragments
 PlotSpec(x=s, masslab=NULL, neutral_losses=NA)
 
 # provide individual neutral loss set
-tmp <- data.frame("Name"=c("Loss1","Loss2"),"Formula"=c("",""),"Mass"=c(90.05,27.995))
+tmp <- data.frame("Name"=c("Loss1","C2H6"),"Formula"=c("",""),"Mass"=c(90.05,27.995))
 PlotSpec(x=s, neutral_losses=tmp)
 
 # provide additional color and annotation information per peak
@@ -94,7 +97,16 @@ PlotSpec(x=s, cols=1+(s[,2]>0.1), txt=data.frame("x"=s[s[,2]>0.1,1],"txt"="txt")
 PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C6H12O6"))
 
 # or annotate a mix of sum formula and text
-txt <- data.frame("x"=s[order(s[,2],decreasing=TRUE)[1:2],1],"txt"=c("C6H12O6", "some text"))
+txt <- data.frame(
+ "x" = s[order(s[,2],decreasing=TRUE)[1:3],1],
+ "txt" = c("C6H12O6", "some text", "H2SO3")
+)
+PlotSpec(x=s, txt=txt)
+
+# if 'txt' contains a column SMILES with valid SMILES codes, they will be rendered additionally
+txt[,"SMILES"] <- c("O=CC(O)C(O)C(O)C(O)CO", "", "OS(=O)(=O)")
+PlotSpec(x=s, txt=txt)
+txt[,"w"] <- rep(0.4,3)
 PlotSpec(x=s, txt=txt)
 
 # simulate a Sodium adduct to the spectrum (and annotate using substitutions)
@@ -102,7 +114,8 @@ p <- which.max(s[,2])
 s <- rbind(s, c(21.98194+s[p,1], 0.6*s[p,2]))
 PlotSpec(x=s, substitutions=matrix(c("H","Na"),ncol=2,byrow=TRUE))
 
-#load ESI test data and apply function
-utils::data(esi_spectrum)
-PlotSpec(x=esi_spectrum, ionization="ESI")
+# add structural formulas by providing SMILES codes
+
+# use predefined ESI parameter set
+PlotSpec(x=s, ionization="ESI")
 }

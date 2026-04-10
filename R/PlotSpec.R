@@ -28,12 +28,13 @@
 #'    `precursor` to a higher mass.
 #'@param xlim To specify xlim explicitly (for comparative plotting).
 #'@param ylim To specify ylim explicitly (for comparative plotting).
+#'@param mar Set to NULL to allow specifying margins outside the function (important for use in Shiny App context with brush event).
 #'
 #'@return
 #'An annotated plot of the mass spectrum.
 #'
 #'@examples
-#'#load test data and apply function
+#'# load APCI test data and apply function
 #'utils::data(apci_spectrum, package = "InterpretMSSpectrum")
 #'PlotSpec(x=apci_spectrum, ionization="APCI")
 #'
@@ -43,13 +44,13 @@
 #'PlotSpec(x=s)
 #'
 #'# use relative labelling
-#'PlotSpec(x=s, rellab=364.1789)
+#'PlotSpec(x=s, rellab=s[which.max(s[,2]),1])
 #'
 #'# avoid annotation of masses and fragments
 #'PlotSpec(x=s, masslab=NULL, neutral_losses=NA)
 #'
 #'# provide individual neutral loss set
-#'tmp <- data.frame("Name"=c("Loss1","Loss2"),"Formula"=c("",""),"Mass"=c(90.05,27.995))
+#'tmp <- data.frame("Name"=c("Loss1","C2H6"),"Formula"=c("",""),"Mass"=c(90.05,27.995))
 #'PlotSpec(x=s, neutral_losses=tmp)
 #'
 #'# provide additional color and annotation information per peak
@@ -59,7 +60,16 @@
 #'PlotSpec(x=s, txt=data.frame("x"=s[which.max(s[,2]),1],"txt"="C6H12O6"))
 #'
 #'# or annotate a mix of sum formula and text
-#'txt <- data.frame("x"=s[order(s[,2],decreasing=TRUE)[1:2],1],"txt"=c("C6H12O6", "some text"))
+#'txt <- data.frame(
+#'  "x" = s[order(s[,2],decreasing=TRUE)[1:3],1],
+#'  "txt" = c("C6H12O6", "some text", "H2SO3")
+#')
+#'PlotSpec(x=s, txt=txt)
+#'
+#'# if 'txt' contains a column SMILES with valid SMILES codes, they will be rendered additionally
+#'txt[,"SMILES"] <- c("O=CC(O)C(O)C(O)C(O)CO", "", "OS(=O)(=O)")
+#'PlotSpec(x=s, txt=txt)
+#'txt[,"w"] <- rep(0.4,3)
 #'PlotSpec(x=s, txt=txt)
 #'
 #'# simulate a Sodium adduct to the spectrum (and annotate using substitutions)
@@ -67,13 +77,14 @@
 #'s <- rbind(s, c(21.98194+s[p,1], 0.6*s[p,2]))
 #'PlotSpec(x=s, substitutions=matrix(c("H","Na"),ncol=2,byrow=TRUE))
 #'
-#'#load ESI test data and apply function
-#'utils::data(esi_spectrum)
-#'PlotSpec(x=esi_spectrum, ionization="ESI")
+#'# add structural formulas by providing SMILES codes
+#'
+#'# use predefined ESI parameter set
+#'PlotSpec(x=s, ionization="ESI")
 
 #'@export
 
-PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, txt=NULL, mz_prec=4, ionization=NULL, neutral_losses=NULL, neutral_loss_cutoff=NULL, substitutions=NULL, precursor=NULL, xlim=NULL, ylim=NULL) {
+PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, txt=NULL, mz_prec=4, ionization=NULL, neutral_losses=NULL, neutral_loss_cutoff=NULL, substitutions=NULL, precursor=NULL, xlim=NULL, ylim=NULL, mar=c(2,2,0.5,0)+0.5) {
   # potential parameters
   max_isomain_peaks <- NULL
 
@@ -137,14 +148,19 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
     if (is.null(cols)) cols <- rep(1, nrow(x))
 
     # set up main plot
-    opar <- graphics::par(no.readonly = TRUE)
-    on.exit(graphics::par(opar))
-    graphics::par("mar"=c(2,2,0.5,0)+0.5)
+    if (!is.null(mar) && is.numeric(mar) && length(mar)==4L && all(is.finite(mar))) {
+      opar <- graphics::par("mar")
+      on.exit(graphics::par("mar" = opar))
+      graphics::par("mar"=mar)
+    }
     if (is.null(xlim)) {
       xlim <- c(floor(min(x[xf,1])), ceiling(max(x[xf,1])))
       if (diff(xlim)<30) xlim <- xlim + c(-1,1)*ceiling((30-diff(xlim))/2)
     }
-    xlim <- round(xlim)
+    #xlim <- round(xlim)
+    if (is.null(ylim)) {
+      ylim <- range(c(0, x[xf,2]))
+    }
     graphics::plot(x=x[xf,1], y=x[xf,2], type="h", las=1, xlab="", ylab="", main="", col=cols[xf], ann=F, axes=F, xlim=xlim, ylim=ylim)
       graphics::axis(2)
       graphics::axis(1, tcl=-0.8, lwd=1.2)
@@ -164,19 +180,30 @@ PlotSpec <- function(x=NULL, masslab=0.1, rellab=FALSE, cutoff=0.01, cols=NULL, 
           l <- cbind(row(dmz)[upper.tri(dmz)][l],col(dmz)[upper.tri(dmz)][l])
           for (j in 1:nrow(l)) {
             graphics::lines(x[xf,][isomain,][l[j,],], lty=2, col=grDevices::grey(0.8))
-            graphics::text(x=mean(x[xf,][isomain,][l[j,],1]), y=mean(x[xf,][isomain,][l[j,],2]), labels=neutral_losses[i,1], col=grDevices::grey(0.8), cex=graphics::par("cex")*0.8)
+            if (!inherits(try(fml2expr(neutral_losses[i,1]), silent=TRUE), "try-error")) {
+              graphics::text(x=mean(x[xf,][isomain,][l[j,],1]), y=mean(x[xf,][isomain,][l[j,],2]), labels=fml2expr(neutral_losses[i,1]), col=grDevices::grey(0.8), cex=graphics::par("cex")*0.8)  
+            } else {
+              graphics::text(x=mean(x[xf,][isomain,][l[j,],1]), y=mean(x[xf,][isomain,][l[j,],2]), labels=neutral_losses[i,1], col=grDevices::grey(0.8), cex=graphics::par("cex")*0.8)
+            }
           }
         }
       }
     }
 
-    # print text (sum formulas)
+    # print text (sum formulas and SMILES where provided)
     if (!is.null(txt)) {
       tmp.y <- sapply(txt[,1],function(y){x[which.min(abs(x[,1]-y)),2]})
       if (!inherits(try(fml2expr(txt[,2]), silent=TRUE), "try-error")) {
         for (i in 1:nrow(txt)) graphics::text(x=txt[i,1], y=tmp.y[i], pos=ifelse(tmp.y[i]>0.9*max(x[xf,2]),1,3), labels=fml2expr(txt[i,2]), col=4, cex=graphics::par("cex")*0.8)
       } else {
         graphics::text(x=txt[,1], y=tmp.y, pos=sapply(tmp.y, function(y) {ifelse(y>0.9*max(x[xf,2]),1,3)}), labels=txt[,2], col=4, cex=graphics::par("cex")*0.8)
+      }
+      if ("SMILES" %in% colnames(txt)) {
+        gp_usr <- c(xlim+c(-1,1)*0.039*diff(xlim), ylim+c(-1,1)*0.039*diff(ylim))
+        for (i in which(txt[,"SMILES"]!="")) {
+          coords <- square_subplot_coord(x = txt[i,1], y = tmp.y[i], gp_usr = gp_usr, w = ifelse("w" %in% colnames(txt), txt[i,"w"], 0.25))
+          renderSMILES(smiles = txt[i,"SMILES"], coords = coords, gp_usr = gp_usr)
+        }
       }
     }
 

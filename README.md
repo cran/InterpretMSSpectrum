@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![Static
+Badge](https://img.shields.io/github/r-package/v/janlisec/InterpretMSSpectrum)](https://img.shields.io/github/r-package/v/janlisec/InterpretMSSpectrum)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/InterpretMSSpectrum)](https://CRAN.R-project.org/package=InterpretMSSpectrum)
 [![R-CMD-check](https://github.com/janlisec/InterpretMSSpectrum/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/janlisec/InterpretMSSpectrum/actions/workflows/R-CMD-check.yaml)
@@ -70,21 +72,21 @@ InterpretMSSpectrum::InterpretMSSpectrum(spec=apci_spectrum)
 #> 
 #> Details of best candidate...
 #>         Formula Score Valid        Mass
-#> 1  C8H16N1O3Si1    75 Valid 202.0899456
-#> 2 C10H24N1O2Si2    71 Valid 246.1345583
-#> 3 C11H24N1O3Si2    44 Valid 274.1294729
-#> 4 C13H30N1O4Si3    84 Valid 348.1482649
-#> 5 C14H34N1O4Si3    79 Valid 364.1795650
+#> 1  C8H16N1O3Si1    75 Valid 202.0899449
+#> 2 C10H24N1O2Si2    71 Valid 246.1345570
+#> 3 C11H24N1O3Si2    44 Valid 274.1294716
+#> 4 C13H30N1O4Si3    84 Valid 348.1482630
+#> 5 C14H34N1O4Si3    79 Valid 364.1795631
 ```
 
-<img src="man/figures/README-exmpl1-1.png" width="100%" />
+<img src="man/figures/README-exmpl1-1.png" alt="" width="100%" />
 
     #> 
     #> 
     #> Time elapsed during individual processing steps...
     #> Time differences in secs
     #>  FormulaGen   ScoreFilt   Plausible NeutralLoss    PathEval        Plot 
-    #>     29.8296      0.0005      0.1235      0.1222      0.3729      0.0662
+    #>     23.7068      0.0005      0.1015      0.1145      0.3117      0.0654
 
 The function can be tweaked with numerous parameters to limit the
 results, speed up calculations and more.
@@ -146,13 +148,15 @@ esi_spectrum <- InterpretMSSpectrum::esi_spectrum
 plot(fmr)
 ```
 
-<img src="man/figures/README-exmpl2-1.png" width="100%" />
+<img src="man/figures/README-exmpl2-1.png" alt="" width="100%" />
 
-Also `findMAIN` provides multiple user options to use individual adduct
-lists, thresholds and rule sets.
+Also `findMAIN()` provides multiple user options to use individual
+adduct lists, thresholds and rule sets.
 
-Finally, `InterpretMSSpectrum` provides a number of helper functions,
-some of which are listed below.
+Finally, **InterpretMSSpectrum** contains a number of helper functions,
+to count chemical elements in sum formulas, calculate the exact mass of
+a sum formula or check if a sum formula is a potential subset of
+another.
 
 ``` r
 # to count the chemical elements within a character vector of sum formulas
@@ -175,6 +179,22 @@ InterpretMSSpectrum:::is.subformula("H2O", "HCOOH")
 #> O1C1 
 #> TRUE
 ```
+
+The plotting function `PlotSpec()` used in this package is quite
+versatile and can annotate mass spectra in multiple ways, including
+structural formulas.
+
+``` r
+txt <- data.frame(
+  "x"=apci_spectrum[order(apci_spectrum[,2],decreasing=TRUE)[1:3],1],
+  "txt"=c("C6H12O6", "some text", "H2SO3"),
+  "SMILES" = c("O=CC(O)C(O)C(O)C(O)CO", "", "OS(=O)(=O)"),
+  "w" = rep(0.4,3)
+)
+InterpretMSSpectrum::PlotSpec(x=apci_spectrum, txt=txt)
+```
+
+<img src="man/figures/README-exmpl4-1.png" alt="" width="100%" />
 
 ## Detailed documentation
 

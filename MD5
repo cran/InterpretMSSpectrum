@@ -1,4 +1,4 @@
-f3eaa911f2815797a3a1feb61a2d35c1 *DESCRIPTION
+dd2a810a370cc32d92af421b2947d70f *DESCRIPTION
 61f14a6a7cff21bc18738cd4302f412c *NAMESPACE
 b619e1bbe449c28303fbd19e364fd44e *R/CountChemicalElements.R
 8da8b9166efe6a82849ffb10d6a20b79 *R/DetermineIsomainPeaks.R
@@ -9,7 +9,7 @@ f88534c299acd2dd79106a8042882dd4 *R/IMS_parallel.R
 a0115604684774086062063ab15728de *R/InterpretMSSpectrum.R
 62487cf8695b9920318808f14a93c67f *R/InterpretTP.R
 7283efb85b219949fa8f84c33b3c61b7 *R/PlausibleFormula.R
-02e7921178ac5523cfdfb3a3cd29436d *R/PlotSpec.R
+e78a47b0aa54d7e9b91b1ae8c0caa794 *R/PlotSpec.R
 aa0d35525b4d750f2a3802a0cd81852f *R/ReadSpecClipboard.R
 4f8301c1e0e98f67ef248ec3fe0de6dd *R/RestrictByTypicalLosses.R
 691d7aa4a29e0219709079cacb19efcc *R/ScoreFormulaCombination.R
@@ -25,8 +25,9 @@ ac2ea39fa90cf5202fd983a530e328af *R/getRuleFromIonSymbol.R
 6910a580b1fafa972075b0db4f5bccec *R/mScore.R
 3b70a89e2ee2ddf86cb7396f2b2a998d *R/sendToMSF.r
 4acb4629cec32d3af05dffb102612322 *R/summary.findMAIN.R
+0e2862e952f318836df8fbe527bc6f4e *R/utils.R
 66b7d2e3745929eedb665e5c6615e07e *R/writeMSF.r
-62f745442bd775d5c0710e605b90c5e3 *README.md
+544ad7a648669377d8a38e3a4581c5b6 *README.md
 a265c95f27f2cc4c933294d5c03c93eb *data/Adducts.RData
 7ca678215e3e9548dd53fa19367b5b5e *data/OrbiMS1.RData
 a0fdec89d4e9b280d40270449d6767d3 *data/apci_spectrum.rda
@@ -45,13 +46,14 @@ e2e51c5c178bacad57fd5f2ba8abe8fe *man/CountChemicalElements.Rd
 e92f00512e87e9b318ad07779adb8df9 *man/InterpretMSSpectrum.Rd
 4811b525ce212b2459462a0560724d7e *man/InterpretTP.Rd
 4ec63cc32b638e9893cedf30b74f78d3 *man/OrbiMS1.Rd
-37e76b83cda6e83aead4d44674142a84 *man/PlotSpec.Rd
+2d2062fa084a6a8dd43b2ebc8183342d *man/PlotSpec.Rd
 1ccd997ea956459062de3deafc0cad62 *man/ReadSpecClipboard.Rd
 c5b13a93a93a06e092ad0b25f8ee0752 *man/apci_spectrum.Rd
 38ac444dcde322d787dc43e37116092a *man/chemical_elements.Rd
 d2c27cddc2530cef620d7e5f2f436f9f *man/esi_spectrum.Rd
-1180f96c25986cac68645fde46463ee4 *man/figures/README-exmpl1-1.png
-eece4adeaeb34cf404927f8636973e56 *man/figures/README-exmpl2-1.png
+ddfb81458d337e9c35edb317592f7676 *man/figures/README-exmpl1-1.png
+0a88b49d5fed3941317015ad2c5db646 *man/figures/README-exmpl2-1.png
+5f0ca77f4515a1824906fac7c850746e *man/figures/README-exmpl4-1.png
 4fa88c1984da6a6248fb00f52f5ac871 *man/findMAIN.Rd
 4e739f965b3f4f5e9facd782a94eb270 *man/fml2expr.Rd
 b53b58e05cc3e9d18f9bf165966fe92c *man/get_exactmass.Rd
@@ -62,9 +64,9 @@ e6bd2b240cca38eb5ca1e2d05389e82e *man/mScore.Rd
 7b064aebd2647629ff037d02fffc8708 *man/sendToMSF.Rd
 18526d567cb0f831408fe35bb89ddff0 *man/writeMSF.Rd
 a986a389c4fec839aec05fd78f822f6a *tests/testthat.R
-e6faa8bf6226c93e930a0226484f5e41 *tests/testthat/_snaps/PlotSpec/plotspec-01.svg
-c7992cc2fbfac068650860368ce42899 *tests/testthat/_snaps/PlotSpec/plotspec-02.svg
-9153b1975ff42ac1ccc531c5b009c238 *tests/testthat/_snaps/findMAIN/findmain-plot-01.svg
+97ef25e5dae2755ddc0aa3aaf597ff3d *tests/testthat/_snaps/PlotSpec/plotspec-01.svg
+04a7f791eb9506cc31f47db6c7053f32 *tests/testthat/_snaps/PlotSpec/plotspec-02.svg
+0de0b42af64455e1442f9f318b82dfc5 *tests/testthat/_snaps/findMAIN/findmain-plot-01.svg
 d22f5b7001a37d0e86517a195efc3f68 *tests/testthat/test-CountChemicalElements.R
 dc6bfcc94502c661c12ed1fc361d3594 *tests/testthat/test-DetermineIsomainPeaks.R
 6cd405c16bbd1b32d68462b7fba341fb *tests/testthat/test-GenerateMetaboliteSQLiteDB.R

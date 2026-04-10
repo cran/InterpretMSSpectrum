@@ -1,8 +1,8 @@
 Type: Package
 Package: InterpretMSSpectrum
 Title: Interpreting High Resolution Mass Spectra
-Version: 1.5.2
-Date: 2025-12-03
+Version: 1.5.3
+Date: 2026-04-10
 Authors@R: c(
     person("Jan", "Lisec", , "jan.lisec@bam.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-1220-2286")),
@@ -18,7 +18,7 @@ Description: High resolution mass spectrometry yields often large data sets of
 License: GPL-3
 URL: https://github.com/janlisec/InterpretMSSpectrum
 Depends: R (>= 2.10.0)
-Imports: enviPat, plyr
+Imports: enviPat, plyr, rcdk
 Suggests: DBI, doParallel, foreach, parallel, Rdisop, RSQLite, testthat
         (>= 3.0.0), vdiffr
 biocViews:
@@ -28,8 +28,8 @@ Language: en-US
 LazyData: true
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-12-03 11:21:33 UTC; jlisec
+Packaged: 2026-04-10 11:20:45 UTC; jlisec
 Author: Jan Lisec [aut, cre] (ORCID: <https://orcid.org/0000-0003-1220-2286>),
   Jaeger Carsten [aut]
 Repository: CRAN
-Date/Publication: 2025-12-03 13:20:02 UTC
+Date/Publication: 2026-04-10 12:10:02 UTC
